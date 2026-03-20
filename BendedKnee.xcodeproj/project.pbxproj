@@ -1,0 +1,655 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		07A06EC49CE6DB732E35CCB2 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F5F43C923F5CC123AA3698 /* RootView.swift */; };
+		0996450DF1FC41E2933BCDB0 /* CalibrationAccumulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EC6EC5766199E2825EE0E2 /* CalibrationAccumulatorTests.swift */; };
+		0D171BE46C65D330A942F797 /* AppFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CBFCDE62E5AC6DCFBCD338 /* AppFactory.swift */; };
+		2E577C39FD95EB19C8D79DA1 /* SessionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7A4459590F39B21B1E5A75 /* SessionPhase.swift */; };
+		3B5E93D324721F7C81183FA1 /* BendedKneeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43119D2BE8224E8E90E25BA9 /* BendedKneeUITests.swift */; };
+		45DC7DAEF98CC92BFCC62DCC /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245F2A5792CFCD4F0F33339B /* AppSettings.swift */; };
+		4E8DF463BAB507DFEDD4E0D6 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D113FF4C7824C20D97DCCA05 /* SessionView.swift */; };
+		5551312D60FBB5BF45A3C52F /* SessionViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8269E97D7A6AADB12B5C633 /* SessionViewModelTests.swift */; };
+		56AA1999437157B0C9754F98 /* BendAngleEstimatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC095C7AAF9B83C1819771C /* BendAngleEstimatorTests.swift */; };
+		68F5AAE8D9C0503F5C1CF28B /* OnboardingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3E21305059495E1308EBF2 /* OnboardingCard.swift */; };
+		6F5E334E934831ECA5BE4EB6 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5FCE332304A707098AC5F6 /* AppTheme.swift */; };
+		7FC5462C4FB7E20FA040E321 /* SessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA21A1F5164190951C380E1 /* SessionViewModel.swift */; };
+		8987FB4F014F48D1D89A1030 /* HapticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72631AA34D3A597381BE72F6 /* HapticsService.swift */; };
+		8D6CC58BF6987BA59C4C681E /* SessionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DBD04D8E7E9C82212EB733 /* SessionStateTests.swift */; };
+		99A6B94146B353EEF1FDA461 /* HapticZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0DB1DC26441A8A8A96748A /* HapticZone.swift */; };
+		AE26D33E3ABC95E814F23312 /* BendAngleEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32870E265A510188EAF024A3 /* BendAngleEstimator.swift */; };
+		AF99F3779DB96C45267352B4 /* ProximityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE68E2D62F37CBBAFF9D28 /* ProximityService.swift */; };
+		B141668DDEF3FF88890A80CA /* MotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B543F05898E6673A3516D399 /* MotionService.swift */; };
+		C34B24F2C0F9548048F377A1 /* HapticZoneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3102C89502264EB5F886923B /* HapticZoneTests.swift */; };
+		C4C793B4A779D7E727E99533 /* AngleCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358384830068289A9BC984FE /* AngleCalculatorTests.swift */; };
+		C9C7B2F12A0D4F1915B9FE0B /* CalibrationAccumulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D08F16A47B0D38CBDEA0898 /* CalibrationAccumulator.swift */; };
+		DBECC65A4AB8826745A1773E /* ExponentialSmoother.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052542135AAFB9DBF91D3FB9 /* ExponentialSmoother.swift */; };
+		E220CA835FA01F29AAF94F7C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18346453ED0DB25DD9A611F /* HomeView.swift */; };
+		E28A7AED5FFDC75D58E61905 /* SettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D193FA852D5762BF2F4892A /* SettingsCard.swift */; };
+		F8E20F65B4FEF01DFA6F94F3 /* BendedKneeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB512B55E95B89ED5DABE48 /* BendedKneeApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3578874200C1C28FF305EEA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46DF744F8183548E9830551A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EF97289861B3F65281171BDA;
+			remoteInfo = BendedKnee;
+		};
+		5C5F34371B5B772AEC98B92F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46DF744F8183548E9830551A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EF97289861B3F65281171BDA;
+			remoteInfo = BendedKnee;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		052542135AAFB9DBF91D3FB9 /* ExponentialSmoother.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExponentialSmoother.swift; sourceTree = "<group>"; };
+		23F5F43C923F5CC123AA3698 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		245F2A5792CFCD4F0F33339B /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		2C3E21305059495E1308EBF2 /* OnboardingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCard.swift; sourceTree = "<group>"; };
+		2F5FCE332304A707098AC5F6 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		3102C89502264EB5F886923B /* HapticZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticZoneTests.swift; sourceTree = "<group>"; };
+		32870E265A510188EAF024A3 /* BendAngleEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimator.swift; sourceTree = "<group>"; };
+		358384830068289A9BC984FE /* AngleCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AngleCalculatorTests.swift; sourceTree = "<group>"; };
+		3CDB7050F744E1A74FAAC520 /* BendedKnee.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BendedKnee.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		43119D2BE8224E8E90E25BA9 /* BendedKneeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendedKneeUITests.swift; sourceTree = "<group>"; };
+		4B7EB568666F4F0C53741A2F /* BendedKneeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BendedKneeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CC095C7AAF9B83C1819771C /* BendAngleEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimatorTests.swift; sourceTree = "<group>"; };
+		5DA21A1F5164190951C380E1 /* SessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionViewModel.swift; sourceTree = "<group>"; };
+		6E7A4459590F39B21B1E5A75 /* SessionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPhase.swift; sourceTree = "<group>"; };
+		72631AA34D3A597381BE72F6 /* HapticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsService.swift; sourceTree = "<group>"; };
+		72DBD04D8E7E9C82212EB733 /* SessionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStateTests.swift; sourceTree = "<group>"; };
+		7D08F16A47B0D38CBDEA0898 /* CalibrationAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationAccumulator.swift; sourceTree = "<group>"; };
+		7D193FA852D5762BF2F4892A /* SettingsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCard.swift; sourceTree = "<group>"; };
+		A9C2AAB411230A397E755C17 /* BendedKneeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BendedKneeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD0DB1DC26441A8A8A96748A /* HapticZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticZone.swift; sourceTree = "<group>"; };
+		B543F05898E6673A3516D399 /* MotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionService.swift; sourceTree = "<group>"; };
+		C4CBFCDE62E5AC6DCFBCD338 /* AppFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFactory.swift; sourceTree = "<group>"; };
+		C8269E97D7A6AADB12B5C633 /* SessionViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionViewModelTests.swift; sourceTree = "<group>"; };
+		C8AE68E2D62F37CBBAFF9D28 /* ProximityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityService.swift; sourceTree = "<group>"; };
+		D113FF4C7824C20D97DCCA05 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
+		D4EC6EC5766199E2825EE0E2 /* CalibrationAccumulatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationAccumulatorTests.swift; sourceTree = "<group>"; };
+		DDB512B55E95B89ED5DABE48 /* BendedKneeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendedKneeApp.swift; sourceTree = "<group>"; };
+		E18346453ED0DB25DD9A611F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0303DC44B47597D0A223B5CD /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				7D193FA852D5762BF2F4892A /* SettingsCard.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		1F5453134E570082C226F279 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				204676ECA0309F99F573D2EA /* Home */,
+				D5D6A56252CDF90A7BA94122 /* Onboarding */,
+				C2D20F8CCA1419D9E2EC6487 /* Session */,
+				0303DC44B47597D0A223B5CD /* Settings */,
+			);
+			name = Features;
+			path = BendedKnee/Features;
+			sourceTree = "<group>";
+		};
+		204676ECA0309F99F573D2EA /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				E18346453ED0DB25DD9A611F /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		50A4DC7CE28AC9453587096A /* BendedKneeTests */ = {
+			isa = PBXGroup;
+			children = (
+				358384830068289A9BC984FE /* AngleCalculatorTests.swift */,
+				5CC095C7AAF9B83C1819771C /* BendAngleEstimatorTests.swift */,
+				D4EC6EC5766199E2825EE0E2 /* CalibrationAccumulatorTests.swift */,
+				3102C89502264EB5F886923B /* HapticZoneTests.swift */,
+				72DBD04D8E7E9C82212EB733 /* SessionStateTests.swift */,
+				C8269E97D7A6AADB12B5C633 /* SessionViewModelTests.swift */,
+			);
+			path = BendedKneeTests;
+			sourceTree = "<group>";
+		};
+		653E8CF99DBABD8508111970 = {
+			isa = PBXGroup;
+			children = (
+				FD8E39B3503AA91CBCFC0B20 /* App */,
+				50A4DC7CE28AC9453587096A /* BendedKneeTests */,
+				7CE3C2F1B4308AF987FA75FA /* BendedKneeUITests */,
+				B6F5845EE1A54F462FE96869 /* Domain */,
+				1F5453134E570082C226F279 /* Features */,
+				9F6BF5D5EE49EC66FC4C9F9B /* Models */,
+				D77343C08BC568ABE0CE2C98 /* Services */,
+				9E7A61194CEE446E10454610 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7CE3C2F1B4308AF987FA75FA /* BendedKneeUITests */ = {
+			isa = PBXGroup;
+			children = (
+				43119D2BE8224E8E90E25BA9 /* BendedKneeUITests.swift */,
+			);
+			path = BendedKneeUITests;
+			sourceTree = "<group>";
+		};
+		9E7A61194CEE446E10454610 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3CDB7050F744E1A74FAAC520 /* BendedKnee.app */,
+				A9C2AAB411230A397E755C17 /* BendedKneeTests.xctest */,
+				4B7EB568666F4F0C53741A2F /* BendedKneeUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9F6BF5D5EE49EC66FC4C9F9B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				245F2A5792CFCD4F0F33339B /* AppSettings.swift */,
+				AD0DB1DC26441A8A8A96748A /* HapticZone.swift */,
+				6E7A4459590F39B21B1E5A75 /* SessionPhase.swift */,
+			);
+			name = Models;
+			path = BendedKnee/Models;
+			sourceTree = "<group>";
+		};
+		B6F5845EE1A54F462FE96869 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				32870E265A510188EAF024A3 /* BendAngleEstimator.swift */,
+				7D08F16A47B0D38CBDEA0898 /* CalibrationAccumulator.swift */,
+				052542135AAFB9DBF91D3FB9 /* ExponentialSmoother.swift */,
+			);
+			name = Domain;
+			path = BendedKnee/Domain;
+			sourceTree = "<group>";
+		};
+		C2D20F8CCA1419D9E2EC6487 /* Session */ = {
+			isa = PBXGroup;
+			children = (
+				D113FF4C7824C20D97DCCA05 /* SessionView.swift */,
+				5DA21A1F5164190951C380E1 /* SessionViewModel.swift */,
+			);
+			path = Session;
+			sourceTree = "<group>";
+		};
+		D5D6A56252CDF90A7BA94122 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				2C3E21305059495E1308EBF2 /* OnboardingCard.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		D77343C08BC568ABE0CE2C98 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				72631AA34D3A597381BE72F6 /* HapticsService.swift */,
+				B543F05898E6673A3516D399 /* MotionService.swift */,
+				C8AE68E2D62F37CBBAFF9D28 /* ProximityService.swift */,
+			);
+			name = Services;
+			path = BendedKnee/Services;
+			sourceTree = "<group>";
+		};
+		FD8E39B3503AA91CBCFC0B20 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				C4CBFCDE62E5AC6DCFBCD338 /* AppFactory.swift */,
+				2F5FCE332304A707098AC5F6 /* AppTheme.swift */,
+				DDB512B55E95B89ED5DABE48 /* BendedKneeApp.swift */,
+				23F5F43C923F5CC123AA3698 /* RootView.swift */,
+			);
+			name = App;
+			path = BendedKnee/App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		51D959A4B31E62F14C9790CE /* BendedKneeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A980139F2FEAAD28E21B4B1B /* Build configuration list for PBXNativeTarget "BendedKneeTests" */;
+			buildPhases = (
+				E6B141584A06E4E1A893787E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EB8BC12342E5B1C39FD0438B /* PBXTargetDependency */,
+			);
+			name = BendedKneeTests;
+			packageProductDependencies = (
+			);
+			productName = BendedKneeTests;
+			productReference = A9C2AAB411230A397E755C17 /* BendedKneeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		89315EC09558B188AA24FC0A /* BendedKneeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 194C94D0D333FB42F920B156 /* Build configuration list for PBXNativeTarget "BendedKneeUITests" */;
+			buildPhases = (
+				767298EEAEEA482D5F999DBF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E5A139B94C3644AF57FDA179 /* PBXTargetDependency */,
+			);
+			name = BendedKneeUITests;
+			packageProductDependencies = (
+			);
+			productName = BendedKneeUITests;
+			productReference = 4B7EB568666F4F0C53741A2F /* BendedKneeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		EF97289861B3F65281171BDA /* BendedKnee */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B8048320782BA213022149E /* Build configuration list for PBXNativeTarget "BendedKnee" */;
+			buildPhases = (
+				76912BC31DDDEEE2546D009A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BendedKnee;
+			packageProductDependencies = (
+			);
+			productName = BendedKnee;
+			productReference = 3CDB7050F744E1A74FAAC520 /* BendedKnee.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46DF744F8183548E9830551A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					89315EC09558B188AA24FC0A = {
+						TestTargetID = EF97289861B3F65281171BDA;
+					};
+					EF97289861B3F65281171BDA = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = BCD196BBB3BDC22A4FB7A744 /* Build configuration list for PBXProject "BendedKnee" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 653E8CF99DBABD8508111970;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EF97289861B3F65281171BDA /* BendedKnee */,
+				51D959A4B31E62F14C9790CE /* BendedKneeTests */,
+				89315EC09558B188AA24FC0A /* BendedKneeUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		767298EEAEEA482D5F999DBF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B5E93D324721F7C81183FA1 /* BendedKneeUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		76912BC31DDDEEE2546D009A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D171BE46C65D330A942F797 /* AppFactory.swift in Sources */,
+				45DC7DAEF98CC92BFCC62DCC /* AppSettings.swift in Sources */,
+				6F5E334E934831ECA5BE4EB6 /* AppTheme.swift in Sources */,
+				AE26D33E3ABC95E814F23312 /* BendAngleEstimator.swift in Sources */,
+				F8E20F65B4FEF01DFA6F94F3 /* BendedKneeApp.swift in Sources */,
+				C9C7B2F12A0D4F1915B9FE0B /* CalibrationAccumulator.swift in Sources */,
+				DBECC65A4AB8826745A1773E /* ExponentialSmoother.swift in Sources */,
+				99A6B94146B353EEF1FDA461 /* HapticZone.swift in Sources */,
+				8987FB4F014F48D1D89A1030 /* HapticsService.swift in Sources */,
+				E220CA835FA01F29AAF94F7C /* HomeView.swift in Sources */,
+				B141668DDEF3FF88890A80CA /* MotionService.swift in Sources */,
+				68F5AAE8D9C0503F5C1CF28B /* OnboardingCard.swift in Sources */,
+				AF99F3779DB96C45267352B4 /* ProximityService.swift in Sources */,
+				07A06EC49CE6DB732E35CCB2 /* RootView.swift in Sources */,
+				2E577C39FD95EB19C8D79DA1 /* SessionPhase.swift in Sources */,
+				4E8DF463BAB507DFEDD4E0D6 /* SessionView.swift in Sources */,
+				7FC5462C4FB7E20FA040E321 /* SessionViewModel.swift in Sources */,
+				E28A7AED5FFDC75D58E61905 /* SettingsCard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E6B141584A06E4E1A893787E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4C793B4A779D7E727E99533 /* AngleCalculatorTests.swift in Sources */,
+				56AA1999437157B0C9754F98 /* BendAngleEstimatorTests.swift in Sources */,
+				0996450DF1FC41E2933BCDB0 /* CalibrationAccumulatorTests.swift in Sources */,
+				C34B24F2C0F9548048F377A1 /* HapticZoneTests.swift in Sources */,
+				8D6CC58BF6987BA59C4C681E /* SessionStateTests.swift in Sources */,
+				5551312D60FBB5BF45A3C52F /* SessionViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E5A139B94C3644AF57FDA179 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EF97289861B3F65281171BDA /* BendedKnee */;
+			targetProxy = 5C5F34371B5B772AEC98B92F /* PBXContainerItemProxy */;
+		};
+		EB8BC12342E5B1C39FD0438B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EF97289861B3F65281171BDA /* BendedKnee */;
+			targetProxy = 3578874200C1C28FF305EEA4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		007BB259779C41309165E4F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		1ABB767ED9E2ABB95B2085C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BendedKnee;
+			};
+			name = Debug;
+		};
+		4873194071EEC317C6852E94 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BendedKnee;
+			};
+			name = Release;
+		};
+		5709C6ECD91CDD5A0DCC5D70 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6E5DC739E947F223EFD0AB97 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = BendedKnee/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.app;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		7259D2AF9ACE538BF6E1F39E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BendedKnee.app/BendedKnee";
+			};
+			name = Debug;
+		};
+		A28A6E05E417B896C92466C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BendedKnee.app/BendedKnee";
+			};
+			name = Release;
+		};
+		A52BFCB335DE74888146CFD8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = BendedKnee/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.app;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		194C94D0D333FB42F920B156 /* Build configuration list for PBXNativeTarget "BendedKneeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1ABB767ED9E2ABB95B2085C5 /* Debug */,
+				4873194071EEC317C6852E94 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8B8048320782BA213022149E /* Build configuration list for PBXNativeTarget "BendedKnee" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A52BFCB335DE74888146CFD8 /* Debug */,
+				6E5DC739E947F223EFD0AB97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A980139F2FEAAD28E21B4B1B /* Build configuration list for PBXNativeTarget "BendedKneeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7259D2AF9ACE538BF6E1F39E /* Debug */,
+				A28A6E05E417B896C92466C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BCD196BBB3BDC22A4FB7A744 /* Build configuration list for PBXProject "BendedKnee" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5709C6ECD91CDD5A0DCC5D70 /* Debug */,
+				007BB259779C41309165E4F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 46DF744F8183548E9830551A /* Project object */;
+}
