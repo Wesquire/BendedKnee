@@ -2,19 +2,20 @@ import SwiftUI
 
 struct SettingsCard: View {
     @ObservedObject var viewModel: SessionViewModel
+    @State private var showingSupportTools = false
+
+    private var shouldShowSupportToolsInline: Bool {
+        viewModel.baselineAngle == nil
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("1. Choose Pocket")
+            Text("Fine-Tune Setup")
                 .font(AppType.title(24))
                 .foregroundStyle(AppTheme.ink)
 
-            Text("Pick the pocket you will actually skate with. Keep the phone top-up with the screen toward your thigh.")
-                .font(AppType.label(14, weight: .medium))
-                .foregroundStyle(AppTheme.inkMuted)
-
             VStack(alignment: .leading, spacing: 10) {
-                Text("Pocket Side")
+                Text("1. Pocket Side")
                     .font(AppType.label(13, weight: .bold))
                     .foregroundStyle(AppTheme.inkMuted)
 
@@ -35,7 +36,7 @@ struct SettingsCard: View {
             }
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("2. Set Target Bend")
+                Text("2. Target Bend")
                     .font(AppType.label(13, weight: .bold))
                     .foregroundStyle(AppTheme.inkMuted)
 
@@ -60,7 +61,7 @@ struct SettingsCard: View {
                 .tint(AppTheme.accent)
                 .accessibilityIdentifier("targetSlider")
 
-                Text("0° to 60° in 1° steps. This is how much extra bend you want beyond standing.")
+                Text("0° to 60° of extra bend beyond standing.")
                     .font(AppType.label(12, weight: .medium))
                     .foregroundStyle(AppTheme.inkMuted)
 
@@ -69,8 +70,52 @@ struct SettingsCard: View {
                     .foregroundStyle(AppTheme.deepForest)
             }
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Haptic Preview")
+            if shouldShowSupportToolsInline {
+                supportToolsContent
+            } else {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showingSupportTools.toggle()
+                    }
+                }) {
+                    HStack {
+                        Text("Pulse Preview & Setup Guide")
+                            .font(AppType.label(14, weight: .bold))
+                            .foregroundStyle(AppTheme.ink)
+
+                        Spacer()
+
+                        Text(showingSupportTools ? "Hide" : "Show")
+                            .font(AppType.label(12, weight: .bold))
+                            .foregroundStyle(AppTheme.inkMuted)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("supportToolsDisclosure")
+
+                if showingSupportTools {
+                    supportToolsContent
+                        .padding(.top, 12)
+                }
+            }
+        }
+        .padding(22)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AppTheme.panelSecondary)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(AppTheme.line, lineWidth: 1)
+                )
+        )
+        .shadow(color: AppTheme.deepForest.opacity(0.06), radius: 18, x: 0, y: 10)
+    }
+
+    private var supportToolsContent: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Preview Haptic")
                     .font(AppType.label(13, weight: .bold))
                     .foregroundStyle(AppTheme.inkMuted)
 
@@ -87,18 +132,6 @@ struct SettingsCard: View {
                 .accessibilityIdentifier("samplePulseButton")
             }
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Placement Rules")
-                    .font(AppType.label(13, weight: .bold))
-                    .foregroundStyle(AppTheme.inkMuted)
-
-                Label("Keep the phone in your selected front pocket.", systemImage: "figure.walk")
-                Label("Keep the phone top-up.", systemImage: "arrow.up")
-                Label("Keep the screen facing your thigh.", systemImage: "iphone")
-            }
-            .font(AppType.label(14, weight: .medium))
-            .foregroundStyle(AppTheme.ink)
-
             Button(action: viewModel.reopenOnboarding) {
                 Text("Review Setup Guide")
                     .font(AppType.label(15, weight: .bold))
@@ -109,16 +142,19 @@ struct SettingsCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
             .accessibilityIdentifier("reopenOnboardingButton")
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Placement Rules")
+                    .font(AppType.label(13, weight: .bold))
+                    .foregroundStyle(AppTheme.inkMuted)
+
+                Label("Keep the phone in your selected front pocket.", systemImage: "figure.walk")
+                Label("Keep the phone top-up.", systemImage: "arrow.up")
+                Label("Keep the screen facing your thigh.", systemImage: "iphone")
+                Label("Keep the app open and in the foreground while skating.", systemImage: "lock.open")
+            }
+            .font(AppType.label(14, weight: .medium))
+            .foregroundStyle(AppTheme.ink)
         }
-        .padding(22)
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(AppTheme.panelSecondary)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(AppTheme.line, lineWidth: 1)
-                )
-        )
-        .shadow(color: AppTheme.deepForest.opacity(0.06), radius: 18, x: 0, y: 10)
     }
 }

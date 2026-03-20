@@ -40,10 +40,9 @@
 
 ## Validation Status
 
-- Latest simulator build-for-testing: passed on `/tmp/BendedKneeDerivedPass3`
-- Focused `SessionViewModelTests`: passed (`27` / `27`)
-- Full unit suite: passed (`87` / `87`)
-- Full UI suite: passed (`10` / `10`)
+- Latest simulator build-for-testing: passed on `/tmp/BendedKneeFinalPolish`
+- Full unit suite: passed (`93` / `93`)
+- Full UI suite: passed (`11` / `11`)
 
 ## Debugger Review Outcome
 
@@ -81,13 +80,57 @@
 ## Final Refinement Pass
 
 - A new final-pass review agent was spawned to audit onboarding, setup hierarchy, session usability, and copy load.
-- Returned review findings queued for implementation:
-  - raise the calibration CTA so it is not buried below the fold
-  - remove duplicate stop controls from the session screen
-  - trim repeated instructional copy across onboarding, setup, and home
+- Agent `Poincare` completed the fresh-eyes walkthrough and the findings were implemented:
+  - reordered first-time setup so users choose pocket and target before calibration
+  - made `Start Session` honestly disabled when placement is invalid
+  - reduced repeat-launch friction by making the long splash first-launch only
+  - surfaced support tools earlier during first-time setup
+  - strengthened the stop affordance and paused-session emphasis
+  - reinforced the foreground/open requirement in onboarding and setup copy
 - The approved haptic cadence for this pass is:
   - none `0`
   - gentle `0.75`
   - medium `0.5`
   - strong `0.33`
-- The final-pass work is being tracked in [`FINAL_REFINEMENT_MASTER_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_REFINEMENT_MASTER_PLAN.md) and [`PHASE_7_ENTRY_UX_HAPTICS.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_7_ENTRY_UX_HAPTICS.md)
+- The final-pass work is tracked in [`FINAL_REFINEMENT_MASTER_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_REFINEMENT_MASTER_PLAN.md) and [`PHASE_7_ENTRY_UX_HAPTICS.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_7_ENTRY_UX_HAPTICS.md), and both are now fully completed.
+
+## Final Verified End State
+
+- The app now opens with a branded splash on first launch, then transitions into a full-screen onboarding flow that no longer dead-ends.
+- First-time setup is linear and clearer:
+  - pick pocket side
+  - set target bend
+  - calibrate
+  - start session
+- The support tools are surfaced inline before first calibration, then collapse into a named helper area afterward.
+- Session start is now honest about invalid placement, and the session stop affordance is easier to hit.
+- Fresh validation on the post-refinement artifact is fully green:
+  - `build-for-testing` passed
+  - full unit suite `93 / 93`
+  - full UI suite `11 / 11`
+
+## Phase 8 Debugger Protocol
+
+- A new three-pass sequential debugger effort has started per [`the_rules.md`](/Users/wesquire/Github/Bended%20Knee/the_rules.md).
+- Tracking files:
+  - [`DEBUGGER_PROTOCOL_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/DEBUGGER_PROTOCOL_PLAN.md)
+  - [`PHASE_8_MULTI_AGENT_DEBUGGER_PROTOCOL.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_8_MULTI_AGENT_DEBUGGER_PROTOCOL.md)
+- Pass execution policy:
+  - one active worker at a time
+  - full-codebase debug on each pass
+  - each pass fixes issues instead of only reporting them
+  - later passes review earlier pass changes before adding new fixes
+
+## Phase 8 Current State
+
+- Pass 1 is complete via local fallback because fresh worker spawning is still blocked by the platform `agent thread limit reached (max 6)` cap.
+- Confirmed pass 1 fixes:
+  - first-launch splash persistence now occurs only after the splash actually completes
+  - canceled splash tasks no longer consume the splash state
+  - preview proximity resets between repeated starts
+- New regression coverage was added for the splash cancellation/completion edge cases and for preview proximity reset behavior.
+- Fresh post-pass validation is green on `/tmp/BendedKneeDebugPass1`:
+  - `build-for-testing` passed
+  - full unit suite `97 / 97`
+  - full UI suite `11 / 11`
+- Passes 2 and 3 are still outstanding. The current blocker is tooling capacity, not a known repo/test failure.

@@ -36,11 +36,13 @@ This document defines the current testing strategy for the Bended Knee iOS app a
 - First-launch onboarding gate
 - Setup screen after onboarding
 - Pocket-side selector and setup guide re-entry
+- Inline first-time support-tool exposure
 - Calibration enabling the session
 - Session screen showing stop control after start
 - Calibration failure message
 - Motion-unavailable state
 - Pocket-removal paused state
+- Forced splash visibility in UI testing
 
 ### Manual Device Validation
 
@@ -57,21 +59,21 @@ This document defines the current testing strategy for the Bended Knee iOS app a
 
 ## Latest Executed Validation
 
-- `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeDerivedPass3 build-for-testing`
-- `xcrun simctl install B0062079-F40F-4D87-B505-1B4AE90B5E13 /tmp/BendedKneeDerivedPass3/Build/Products/Debug-iphonesimulator/BendedKnee.app`
-- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDerivedPass3/Build/Products/BendedKnee_unit_only.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests/SessionViewModelTests`
-- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDerivedPass3/Build/Products/BendedKnee_unit_only.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13'`
-- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDerivedPass3/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
+- `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeFinalPolish build-for-testing`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
 
 ## Latest Results
 
-- Focused `SessionViewModelTests`: `27` tests passed, `0` failures
-- Full unit suite: `87` tests passed, `0` failures
-- Full UI suite: `10` tests passed, `0` failures
+- Full unit suite: `93` tests passed, `0` failures
+- Full UI suite: `11` tests passed, `0` failures
 
 ## Notes
 
-- The final split full unit and full UI suites are green on the pass-3 artifact set.
-- This machine sometimes needs a manual `simctl install` and an explicit `arch=arm64` destination before `xcodebuild test-without-building` becomes reliable again after simulator instability.
-- A direct combined all-tests one-shot run remains intermittently unstable on this machine because `CoreSimulator` / the Xcode runner can interrupt or early-exit before a unified summary completes.
+- The final split full unit and full UI suites are green on the post-refinement artifact set at `/tmp/BendedKneeFinalPolish`.
+- The new tests added in this pass cover:
+  - first-launch-only production splash behavior
+  - truthful start-session availability when placement becomes invalid
+  - support-tool exposure regardless of whether they are inline or disclosed
+- A direct combined all-tests one-shot run remains more fragile than split suite execution on this machine because of `CoreSimulator` / Xcode runner behavior.
 - Real-device validation remains required for motion feel, proximity behavior, and haptic tuning.

@@ -15,16 +15,6 @@ struct SessionView: View {
                             .foregroundStyle(Color.white.opacity(0.70))
 
                         Spacer()
-
-                        Button(action: viewModel.stopSession) {
-                            Text("End")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Capsule().fill(Color.white.opacity(0.10)))
-                                .foregroundStyle(.white)
-                        }
-                        .accessibilityIdentifier("endSessionButton")
                     }
 
                     stateBadge
@@ -33,12 +23,12 @@ struct SessionView: View {
                         .font(.system(size: 110, weight: .black, design: .rounded))
                         .foregroundStyle(angleColor)
                         .monospacedDigit()
-                        .opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.35 : 1)
+                        .opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.18 : 1)
                         .accessibilityIdentifier("sessionAngleText")
 
                     Text("Target \(viewModel.targetAngleText)")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.42 : 0.75))
+                        .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.24 : 0.75))
                 }
                 .padding(.top, 44)
 
@@ -56,7 +46,7 @@ struct SessionView: View {
                 Text(viewModel.primarySessionDetail)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.white.opacity(0.78))
+                    .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.92 : 0.78))
                     .padding(.horizontal, 18)
 
                 Text("Need a new target? End the session and change it in setup before skating again.")
@@ -64,6 +54,17 @@ struct SessionView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.white.opacity(0.62))
                     .padding(.horizontal, 24)
+
+                Button(action: viewModel.stopSession) {
+                    Text("End Session")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.white.opacity(0.14))
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+                .accessibilityIdentifier("endSessionButton")
 
                 Spacer(minLength: 12)
             }
@@ -143,22 +144,22 @@ struct SessionView: View {
     }
 
     private var pausedBanner: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Phone Removed")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .black, design: .rounded))
                 .foregroundStyle(.white)
             Text("Return the phone to your front pocket to resume haptic coaching.")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.78))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.86))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
+        .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.08))
+                .fill(Color.white.opacity(0.14))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.20), lineWidth: 1)
                 )
         )
         .accessibilityIdentifier("pausedPocketRemovedBanner")

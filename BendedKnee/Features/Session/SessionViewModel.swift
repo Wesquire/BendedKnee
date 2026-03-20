@@ -316,17 +316,17 @@ final class SessionViewModel: ObservableObject {
     }
 
     var setupSummaryTitle: String {
-        if let baselineAngle {
+        if baselineAngle != nil {
             return "Setup Locked In"
         }
         return "Skating Setup"
     }
 
     var setupSummaryDetail: String {
-        if let baselineAngle {
+        if baselineAngle != nil {
             return "Baseline ready. Keep using your \(settings.pocketSide.rawValue.lowercased()) front pocket and start when you are ready to roll."
         }
-        return "Choose your pocket, pick your bend goal, then calibrate upright before you skate."
+        return "Set your pocket and bend goal first, then calibrate upright before you skate."
     }
 
     var setupStepTitle: String {
@@ -358,6 +358,20 @@ final class SessionViewModel: ObservableObject {
         case .onboarding, .idle:
             return "Use your \(settings.pocketSide.rawValue.lowercased()) front pocket, keep the phone top-up with the screen toward your thigh, then calibrate upright."
         }
+    }
+
+    var canStartSession: Bool {
+        sessionPhase == .ready && !placementInvalid
+    }
+
+    var startSessionHelperText: String {
+        if placementInvalid {
+            return "Fix phone placement before starting. Keep it top-up with the screen against your thigh."
+        }
+        if baselineAngle == nil {
+            return "Pick your setup, calibrate upright, then start when the app says ready."
+        }
+        return "Keep the app open and in the foreground while you skate. Locking or leaving the app pauses coaching."
     }
 
     private func handleMotion(_ snapshot: MotionSnapshot) {

@@ -31,8 +31,7 @@ final class ProximityService: ProximityMonitoring {
             forName: UIDevice.proximityStateDidChangeNotification,
             object: UIDevice.current,
             queue: .main
-        ) { [weak self] _ in
-            guard let self else { return }
+        ) { _ in
             handler(UIDevice.current.proximityState)
         }
         handler(UIDevice.current.proximityState)
@@ -66,6 +65,9 @@ final class PreviewProximityService: ProximityMonitoring {
     var currentState: Bool = true
 
     func start(handler: @escaping (Bool) -> Void) {
+        scheduledChange?.cancel()
+        scheduledChange = nil
+        currentState = true
         self.handler = handler
         handler(currentState)
         if case .autoRemove(let delay) = mode {
@@ -84,6 +86,7 @@ final class PreviewProximityService: ProximityMonitoring {
     func stop() {
         scheduledChange?.cancel()
         scheduledChange = nil
+        currentState = true
         handler = nil
     }
 

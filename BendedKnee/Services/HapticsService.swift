@@ -25,16 +25,12 @@ final class HapticsService: HapticsControlling {
             }
             newEngine.resetHandler = { [weak self] in
                 self?.engineRunning = false
-                try? self?.engine?.start()
-                self?.engineRunning = true
+                self?.startEngineIfNeeded()
             }
             engine = newEngine
         }
 
-        if !engineRunning {
-            try? engine?.start()
-            engineRunning = true
-        }
+        _ = startEngineIfNeeded()
     }
 
     func update(deficit: Double) {
@@ -48,9 +44,11 @@ final class HapticsService: HapticsControlling {
         guard zone != .none else { return }
 
         playPulse(for: zone)
-        pulseTimer = Timer.scheduledTimer(withTimeInterval: zone.interval, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: zone.interval, repeats: true) { [weak self] _ in
             self?.playPulse(for: zone)
         }
+        pulseTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     func playSamplePulse() {
@@ -71,7 +69,7 @@ final class HapticsService: HapticsControlling {
 
     private func playSamplePulse(intensity: Float, sharpness: Float) {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
-        if !engineRunning { start() }
+        guard startEngineIfNeeded() else { return }
 
         let intensityParameter = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
         let sharpnessParameter = CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
@@ -89,6 +87,21 @@ final class HapticsService: HapticsControlling {
         }
 
         try? player.start(atTime: 0)
+    }
+
+    @discardableResult
+    private func startEngineIfNeeded() -> Bool {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return false }
+        guard let engine else { return false }
+        guard !engineRunning else { return true }
+        do {
+            try engine.start()
+            engineRunning = true
+            return true
+        } catch {
+            engineRunning = false
+            return false
+        }
     }
 }
 

@@ -295,6 +295,56 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.statusText, "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh.")
     }
 
+    func testStartSessionBecomesUnavailableWhenPlacementIsInvalid() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        XCTAssertTrue(viewModel.canStartSession)
+
+        motion.emit(gravity: CMAcceleration(x: 0, y: 0.9, z: 0.1))
+
+        XCTAssertTrue(viewModel.placementInvalid)
+        XCTAssertFalse(viewModel.canStartSession)
+        XCTAssertTrue(viewModel.startSessionHelperText.contains("Fix phone placement before starting"))
+    }
+
+    func testPreviewProximityServiceResetsStateAcrossStarts() {
+        let proximity = PreviewProximityService(mode: .autoRemove(after: 10))
+        var firstRunStates: [Bool] = []
+        proximity.start { firstRunStates.append($0) }
+        proximity.stop()
+
+        var secondRunStates: [Bool] = []
+        proximity.start { secondRunStates.append($0) }
+
+        XCTAssertEqual(firstRunStates.first, true)
+        XCTAssertEqual(secondRunStates.first, true)
+        XCTAssertTrue(proximity.currentState)
+    }
+
     func testRunningSessionExposesReadablePrimaryState() async {
         let motion = MockMotionService()
         let proximity = MockProximityService()

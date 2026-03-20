@@ -24,9 +24,7 @@ struct LaunchExperienceView: View {
         }
         .task(id: showingSplash) {
             guard showingSplash else { return }
-            if configuration.splashDurationNanoseconds > 0 {
-                try? await Task.sleep(nanoseconds: configuration.splashDurationNanoseconds)
-            }
+            guard await configuration.completeSplashDelayIfNeeded() else { return }
             withAnimation(.easeOut(duration: 0.35)) {
                 showingSplash = false
             }
@@ -72,13 +70,15 @@ struct SplashView: View {
                 Text("Pocket coach for deeper knee bend")
                     .font(AppType.label(16, weight: .bold))
                     .foregroundStyle(AppTheme.inkMuted)
+                    .accessibilityIdentifier("splashTagline")
+
+                Text("Set your pocket. Lock your baseline. Keep the app open while you skate.")
+                    .font(AppType.label(13, weight: .semibold))
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(AppTheme.inkMuted.opacity(0.88))
+                    .padding(.horizontal, 18)
 
                 Spacer()
-
-                Text("Loading setup...")
-                    .font(AppType.label(13, weight: .bold))
-                    .foregroundStyle(AppTheme.inkMuted.opacity(0.84))
-                    .padding(.bottom, 26)
             }
             .padding(.horizontal, 28)
         }

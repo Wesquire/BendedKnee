@@ -44,7 +44,7 @@ struct OnboardingCard: View {
             bullets: [
                 "The live number is bend from standing.",
                 "Haptics warn you when you rise too tall.",
-                "You keep the app open while skating."
+                "The app must stay open while you skate."
             ],
             symbol: "figure.skating"
         ),
@@ -66,7 +66,7 @@ struct OnboardingCard: View {
             bullets: [
                 "Target means extra bend beyond standing.",
                 "If the phone leaves your pocket, coaching pauses.",
-                "You can feel a sample pulse in setup first."
+                "Locking or leaving the app pauses coaching."
             ],
             symbol: "waveform.path.ecg"
         )
@@ -137,6 +137,18 @@ struct OnboardingCard: View {
                                     .foregroundStyle(AppTheme.ink)
                             }
                         }
+                    }
+
+                    if pageIndex == pages.count - 1 {
+                        Label("Important: keep the app open and in the foreground while skating.", systemImage: "hand.raised.fill")
+                            .font(AppType.label(14, weight: .bold))
+                            .foregroundStyle(AppTheme.danger)
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(AppTheme.danger.opacity(0.10))
+                            )
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

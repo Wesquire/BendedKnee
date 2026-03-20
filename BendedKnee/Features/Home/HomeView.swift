@@ -21,9 +21,15 @@ struct HomeView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
-                    heroCard
-                    calibrationCard
-                    SettingsCard(viewModel: viewModel)
+                    if viewModel.baselineAngle == nil {
+                        heroCard
+                        SettingsCard(viewModel: viewModel)
+                        calibrationCard
+                    } else {
+                        heroCard
+                        calibrationCard
+                        SettingsCard(viewModel: viewModel)
+                    }
                 }
                 .padding(20)
             }
@@ -86,11 +92,9 @@ struct HomeView: View {
                     .font(AppType.label(14, weight: .medium))
                     .foregroundStyle(AppTheme.inkMuted)
             } else {
-                VStack(alignment: .leading, spacing: 12) {
-                    setupStep(number: "1", title: "Pocket + target", detail: "\(viewModel.settings.pocketSide.rawValue) pocket, \(viewModel.targetAngleText) target")
-                    setupStep(number: "2", title: "Calibrate upright", detail: "Stand still for the 3 second countdown")
-                    setupStep(number: "3", title: "Start session", detail: "Skate with the app awake and the phone settled")
-                }
+                Text("1. Choose \(viewModel.settings.pocketSide.rawValue.lowercased()) pocket. 2. Set \(viewModel.targetAngleText) target. 3. Calibrate upright. 4. Keep the app open while you skate.")
+                    .font(AppType.label(14, weight: .medium))
+                    .foregroundStyle(AppTheme.inkMuted)
             }
 
             Text(viewModel.statusText)
@@ -127,9 +131,21 @@ struct HomeView: View {
                 .font(AppType.label(15, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
-            Text("If the pocket moves too much, calibration will fail and you can try again immediately.")
+            Text("If the pocket moves too much, calibration will fail and you can try again immediately. When you skate, the app must stay open and in the foreground.")
                 .font(AppType.label(13, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
+
+            if viewModel.placementInvalid {
+                Label("Phone placement looks off. Keep it top-up with the screen against your thigh before you continue.", systemImage: "exclamationmark.triangle.fill")
+                    .font(AppType.label(13, weight: .bold))
+                    .foregroundStyle(AppTheme.danger)
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(AppTheme.danger.opacity(0.10))
+                    )
+            }
 
             if case .calibrating(let secondsRemaining) = viewModel.sessionPhase {
                 HStack(spacing: 10) {
@@ -154,6 +170,10 @@ struct HomeView: View {
             .opacity(isUnavailable ? 0.4 : 1)
             .accessibilityIdentifier("calibrateButton")
 
+            Text(viewModel.startSessionHelperText)
+                .font(AppType.label(13, weight: .semibold))
+                .foregroundStyle(viewModel.placementInvalid ? AppTheme.danger : AppTheme.inkMuted)
+
             Button(action: viewModel.startSession) {
                 Text("Start Session")
                     .font(.system(size: 17, weight: .bold, design: .rounded))
@@ -164,8 +184,8 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
             .buttonStyle(PrimaryFilledButtonStyle())
-            .disabled(viewModel.sessionPhase != .ready)
-            .opacity(viewModel.sessionPhase == .ready ? 1 : 0.4)
+            .disabled(!viewModel.canStartSession)
+            .opacity(viewModel.canStartSession ? 1 : 0.4)
             .accessibilityIdentifier("startSessionButton")
         }
         .padding(22)
@@ -202,25 +222,6 @@ struct HomeView: View {
             return true
         }
         return false
-    }
-
-    private func setupStep(number: String, title: String, detail: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(number)
-                .font(AppType.label(14, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(Circle().fill(AppTheme.deepForest))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(AppType.label(14, weight: .bold))
-                    .foregroundStyle(AppTheme.ink)
-                Text(detail)
-                    .font(AppType.label(13, weight: .medium))
-                    .foregroundStyle(AppTheme.inkMuted)
-            }
-        }
     }
 
     private func setupMetric(title: String, value: String, emphasis: Color) -> some View {

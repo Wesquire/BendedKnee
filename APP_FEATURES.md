@@ -7,6 +7,7 @@
 ## What The App Does
 
 - Guides the user through a descriptive first-run onboarding flow and a reopenable setup guide
+- Shows a branded splash screen on first launch
 - Lets the user choose a pocket side and a target bend from `0°` to `60°`
 - Calibrates a standing baseline after a 3-second delay
 - Shows a live numeric bend value
@@ -29,6 +30,7 @@
 ### Calibration
 
 - User stands upright and still
+- User should set pocket side and target before calibrating
 - App counts down for 3 seconds
 - Baseline locks only if enough stable samples are captured
 - Noisy calibration fails with an explicit retry message
@@ -40,24 +42,24 @@
 - Below target: haptics escalate by deficit zone
 - Pocket removed: session pauses haptics
 - Invalid placement: coaching pauses until placement is corrected
+- The app must remain open and foregrounded during the session
 
 ## Main User Flow
 
 1. Launch the app
-2. Read onboarding
+2. On first launch, watch the branded splash and read onboarding
 3. Choose the skating pocket and set target bend
-4. Place the phone in a front pocket, top-up, screen facing the thigh
-5. Optionally feel a sample pulse
+4. Feel a sample pulse or reopen the setup guide if needed
+5. Place the phone in a front pocket, top-up, screen facing the thigh
 6. Calibrate upright
 7. Start the live session
-8. Skate and respond to the live number and haptics
-9. End the session
+8. Keep the app open while skating and respond to the live number and haptics
+9. End the session with the large session control
 
 ## Latest Verified Test Results
 
-- Focused `SessionViewModelTests`: `27` passed, `0` failed
-- Full unit suite: `87` passed, `0` failed
-- Full UI suite: `10` passed, `0` failed
+- Full unit suite: `93` passed, `0` failed
+- Full UI suite: `11` passed, `0` failed
 
 ## Automated Tests Run
 
@@ -65,14 +67,17 @@
   - bend-angle math
   - calibration stability thresholds
   - haptic zone mapping
+  - first-launch splash persistence
   - onboarding and settings persistence
   - recalibration interruption recovery
   - invalid placement handling
+  - truthful start-session enablement
   - pocket removal and auto-resume
   - session start when already out of pocket
   - pocket-side revalidation after switching setup
 - UI coverage:
   - first-launch onboarding
+  - forced splash visibility
   - setup controls after onboarding
   - calibration enabling start
   - session start/end controls

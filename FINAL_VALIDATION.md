@@ -7,26 +7,32 @@ This document records the validation work completed for the rebuilt and refined 
 ## Build Verification
 
 - Verified final simulator build products with:
-  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeDerivedPass3 build-for-testing`
+  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeFinalPolish build-for-testing`
 
 ## Automated Test Verification
 
-### Focused Unit Regression
-
-- Result: `27` passed, `0` failed
-- Coverage focus:
-  - session startup state handling
-  - recalibration interruption recovery
-  - pocket-side revalidation
-  - existing session view-model regressions
-
 ### Full Unit Suite
 
-- Result: `87` passed, `0` failed
+- Command:
+  - `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests`
+- Result: `93` passed, `0` failed
+- Coverage added/confirmed in the final refinement pass:
+  - first-launch-only splash persistence
+  - truthful start-session disablement when placement becomes invalid
+  - updated haptic cadence assertions
+  - session-model flow regressions remained green
 
 ### Full UI Suite
 
-- Result: `10` passed, `0` failed
+- Command:
+  - `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
+- Result: `11` passed, `0` failed
+- Coverage added/confirmed in the final refinement pass:
+  - splash appears when forced in UI tests
+  - onboarding completes into setup
+  - first-time support tools are visible and usable
+  - setup guide can be reopened after the new UX adjustments
+  - session end control still exists after the session layout change
 
 ## Debugger Passes Completed
 
@@ -41,11 +47,15 @@ This document records the validation work completed for the rebuilt and refined 
 
 ## Features Reviewed And Revalidated
 
+- First-launch-only branded splash behavior
 - Full-screen onboarding
+- Foreground/open-session warning in onboarding and setup
 - Setup guide re-entry
 - Pocket-side selection
 - Sample haptic control
 - Setup target slider and guidance copy
+- First-time setup sequencing
+- Truthful start-session availability
 - 3-second upright calibration flow
 - Noisy-calibration failure behavior
 - Motion-unavailable state
@@ -67,6 +77,6 @@ This document records the validation work completed for the rebuilt and refined 
 
 ## Honest End State
 
-- The app currently has a green final simulator build, a green focused `SessionViewModelTests` slice, a green full unit suite, and a green full UI suite.
+- The app currently has a green final simulator build, a green full unit suite, and a green full UI suite on the post-refinement artifact set.
 - The required three-pass debugger-agent review is complete and its findings are addressed in code and tests.
 - The only remaining gap is real-device validation for skating conditions and haptic tuning.

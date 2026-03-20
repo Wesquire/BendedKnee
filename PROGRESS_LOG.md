@@ -106,3 +106,79 @@
   - trim repeated instructional copy
 - Created the final master plan in [`FINAL_REFINEMENT_MASTER_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_REFINEMENT_MASTER_PLAN.md)
 - Created a new evidence checklist in [`PHASE_7_ENTRY_UX_HAPTICS.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_7_ENTRY_UX_HAPTICS.md)
+
+### Final Refinement Pass - Entry, UX, And Validation Closure
+
+- Added the branded splash and Bended Knee brand mark, then refined launch behavior so the full `2.5s` splash is first-launch only in normal app use while UI tests can still force splash coverage deterministically.
+- Removed fake loading language from the splash and replaced it with product-accurate setup guidance.
+- Repaired onboarding for small-screen/full-height behavior and reinforced the critical foreground/open-session constraint on the final onboarding step.
+- Re-sequenced first-time setup into the more logical order:
+  - pocket side
+  - target bend
+  - calibration
+  - session start
+- Surfaced support tools directly during first-time setup:
+  - sample pulse
+  - review setup guide
+- Renamed the post-setup help disclosure to make its purpose clearer after the first calibration.
+- Made the session start control truthful by disabling it when placement is invalid and adding explicit helper text that explains why.
+- Strengthened setup and onboarding copy around the non-negotiable foreground requirement.
+- Reworked the session exit affordance into a larger bottom `End Session` control and made the paused/removal state more dominant visually.
+- Integrated the fresh read-only UX audit findings from agent `Poincare`, including:
+  - better setup sequencing
+  - honest CTA state
+  - reduced repeat-launch friction
+  - earlier help discovery
+  - stronger session stop affordance
+
+### Final Refinement Validation Actually Run
+
+- `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeFinalPolish build-for-testing`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
+
+### Final Refinement Verified Results
+
+- Full unit suite:
+  - `93` tests passed
+  - `0` failures
+- Full UI suite:
+  - `11` tests passed
+  - `0` failures
+
+### Phase 8 - Multi-Agent Debugger Protocol Start
+
+- Began the required three-pass debugger protocol described in [`the_rules.md`](/Users/wesquire/Github/Bended%20Knee/the_rules.md).
+- Created the debugger protocol master tracker in [`DEBUGGER_PROTOCOL_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/DEBUGGER_PROTOCOL_PLAN.md).
+- Created the phase evidence tracker in [`PHASE_8_MULTI_AGENT_DEBUGGER_PROTOCOL.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_8_MULTI_AGENT_DEBUGGER_PROTOCOL.md).
+- Locked the orchestration model:
+  - pass 1 worker edits first
+  - pass 2 reviews pass 1 and then edits
+  - pass 3 reviews passes 1 and 2 and then edits
+  - full validation runs after all three passes
+
+### Phase 8 - Local Fallback Pass 1
+
+- Attempted to run pass 1 with a debugger worker, but the first worker failed to return results and replacement worker spawning was blocked by the platform `agent thread limit reached (max 6)` cap.
+- Continued pass 1 locally rather than stopping.
+- Fixed splash persistence so first-launch splash state is written only after the splash actually completes.
+- Fixed splash cancellation handling so a canceled splash task no longer marks first-launch splash as consumed.
+- Fixed the preview proximity harness so repeated starts reset proximity back to the in-pocket state instead of carrying over a stale removed state.
+- Added regression coverage for the new launch and preview-proximity edge cases.
+
+### Phase 8 Local Validation Actually Run
+
+- `xcodebuild -project /Users/wesquire/Github/Bended\ Knee/BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeDebugPass1 build-for-testing`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebugPass1/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests/AppLaunchConfigurationTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebugPass1/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests/SessionViewModelTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebugPass1/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebugPass1/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
+
+### Phase 8 Local Validation Results
+
+- Full unit suite:
+  - `97` tests passed
+  - `0` failures
+- Full UI suite:
+  - `11` tests passed
+  - `0` failures

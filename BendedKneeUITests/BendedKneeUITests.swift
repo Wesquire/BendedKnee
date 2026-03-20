@@ -18,7 +18,7 @@ final class BendedKneeUITests: XCTestCase {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        tap(app.buttons["calibrateButton"])
+        tap(app.buttons["calibrateButton"], in: app)
         let startButton = app.buttons["startSessionButton"]
         XCTAssertTrue(startButton.waitForExistence(timeout: 2))
         waitForButtonToBecomeEnabled(startButton)
@@ -28,11 +28,11 @@ final class BendedKneeUITests: XCTestCase {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        tap(app.buttons["calibrateButton"])
+        tap(app.buttons["calibrateButton"], in: app)
         let startButton = app.buttons["startSessionButton"]
         XCTAssertTrue(startButton.waitForExistence(timeout: 2))
         waitForButtonToBecomeEnabled(startButton)
-        tap(startButton)
+        tap(startButton, in: app)
 
         XCTAssertTrue(app.staticTexts["sessionAngleText"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["endSessionButton"].exists)
@@ -43,7 +43,7 @@ final class BendedKneeUITests: XCTestCase {
 
         advanceOnboarding(in: app)
         XCTAssertTrue(app.segmentedControls["pocketSidePicker"].waitForExistence(timeout: 2))
-        tap(app.buttons["Preview & Help"])
+        revealSupportToolsIfNeeded(in: app)
         XCTAssertTrue(app.buttons["samplePulseButton"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["reopenOnboardingButton"].exists)
     }
@@ -52,10 +52,10 @@ final class BendedKneeUITests: XCTestCase {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        tap(app.buttons["Preview & Help"])
+        revealSupportToolsIfNeeded(in: app)
         let reopenButton = app.buttons["reopenOnboardingButton"]
         XCTAssertTrue(reopenButton.waitForExistence(timeout: 2))
-        tap(reopenButton)
+        tap(reopenButton, in: app)
 
         XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
     }
@@ -70,15 +70,15 @@ final class BendedKneeUITests: XCTestCase {
     func testSplashAppearsWhenRequestedInUITests() {
         let app = launchApp(arguments: ["UITESTING", "SHOW_SPLASH", "FAST_SPLASH", "FAST_CALIBRATION"])
 
-        XCTAssertTrue(app.otherElements["splashView"].waitForExistence(timeout: 1))
-        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Pocket coach for deeper knee bend"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 5))
     }
 
     func testCalibrationFailureShowsHelpfulMessage() {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION", "NOISY_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        tap(app.buttons["calibrateButton"])
+        tap(app.buttons["calibrateButton"], in: app)
 
         XCTAssertTrue(app.staticTexts["Calibration failed. Hold still and keep the phone settled."].waitForExistence(timeout: 5))
     }
@@ -94,11 +94,11 @@ final class BendedKneeUITests: XCTestCase {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION", "AUTO_REMOVE_PROXIMITY"])
 
         advanceOnboarding(in: app)
-        tap(app.buttons["calibrateButton"])
+        tap(app.buttons["calibrateButton"], in: app)
         let startButton = app.buttons["startSessionButton"]
         XCTAssertTrue(startButton.waitForExistence(timeout: 2))
         waitForButtonToBecomeEnabled(startButton)
-        tap(startButton)
+        tap(startButton, in: app)
 
         XCTAssertTrue(app.staticTexts["Phone Removed"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.staticTexts["Return the phone to your front pocket to resume haptic coaching."].exists)
@@ -110,7 +110,7 @@ final class BendedKneeUITests: XCTestCase {
         advanceOnboarding(in: app)
         let picker = app.segmentedControls["pocketSidePicker"]
         XCTAssertTrue(picker.waitForExistence(timeout: 2))
-        tap(picker.buttons["Left"])
+        tap(picker.buttons["Left"], in: app)
         XCTAssertTrue(app.staticTexts["Use your left front pocket."].waitForExistence(timeout: 2))
     }
 
@@ -118,13 +118,13 @@ final class BendedKneeUITests: XCTestCase {
         for _ in 0..<6 {
             let continueButton = app.buttons["continueButton"]
             if continueButton.waitForExistence(timeout: 1) {
-                tap(continueButton)
+                tap(continueButton, in: app)
                 return
             }
 
             let nextButton = app.buttons["onboardingNextButton"]
             XCTAssertTrue(nextButton.waitForExistence(timeout: 2))
-            tap(nextButton)
+            tap(nextButton, in: app)
         }
 
         XCTFail("Onboarding did not reach the final continue button.")
@@ -138,22 +138,37 @@ final class BendedKneeUITests: XCTestCase {
         return app
     }
 
-    private func tap(_ element: XCUIElement, timeout: TimeInterval = 4) {
+    private func revealSupportToolsIfNeeded(in app: XCUIApplication) {
+        let sampleButton = app.buttons["samplePulseButton"]
+        if sampleButton.exists {
+            return
+        }
+
+        let disclosure = app.buttons["supportToolsDisclosure"]
+        if disclosure.waitForExistence(timeout: 2) {
+            tap(disclosure, in: app)
+        }
+    }
+
+    private func tap(_ element: XCUIElement, in app: XCUIApplication, timeout: TimeInterval = 4) {
         XCTAssertTrue(element.waitForExistence(timeout: timeout))
 
         let predicate = NSPredicate(format: "hittable == true")
-        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
-        _ = XCTWaiter().wait(for: [expectation], timeout: timeout)
+        let scrollContainer = app.scrollViews.firstMatch.exists ? app.scrollViews.firstMatch : app
 
-        for _ in 0..<3 {
+        for _ in 0..<4 {
+            let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+            _ = XCTWaiter().wait(for: [expectation], timeout: 1)
+
             if element.isHittable {
                 element.tap()
                 return
             }
-            XCUIApplication().swipeUp()
+
+            scrollContainer.swipeUp()
         }
 
-        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTFail("Element never became hittable: \(element)")
     }
 
     private func waitForButtonToBecomeEnabled(_ button: XCUIElement) {
