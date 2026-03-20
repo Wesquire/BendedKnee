@@ -90,3 +90,19 @@
 
 - Real-device validation still has not been performed in this environment.
 - Combined all-tests one-shot execution is still intermittently unstable on this machine because of `CoreSimulator` / Xcode runner interruptions, even though the final split full unit and full UI suites are green.
+
+### Final Refinement Pass - Scope Lock
+
+- Re-read [`the_rules.md`](/Users/wesquire/Github/Bended%20Knee/the_rules.md) before starting the last requested refinement pass.
+- Locked the updated haptic cadence with the user:
+  - none `0`
+  - gentle `0.75`
+  - medium `0.5`
+  - strong `0.33`
+- Spawned a fresh UX/UI + layman + debugger review agent for the final pass.
+- Consolidated the returned UX findings:
+  - move calibration higher in setup
+  - remove duplicate stop controls
+  - trim repeated instructional copy
+- Created the final master plan in [`FINAL_REFINEMENT_MASTER_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_REFINEMENT_MASTER_PLAN.md)
+- Created a new evidence checklist in [`PHASE_7_ENTRY_UX_HAPTICS.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_7_ENTRY_UX_HAPTICS.md)

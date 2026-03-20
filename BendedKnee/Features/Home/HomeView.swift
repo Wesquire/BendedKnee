@@ -8,22 +8,22 @@ struct HomeView: View {
             AppTheme.homeBackground.ignoresSafeArea()
 
             Circle()
-                .fill(AppTheme.accentSoft.opacity(0.26))
-                .frame(width: 280, height: 280)
-                .blur(radius: 10)
-                .offset(x: 130, y: -280)
+                .fill(AppTheme.accentSoft.opacity(0.18))
+                .frame(width: 230, height: 230)
+                .blur(radius: 14)
+                .offset(x: 138, y: -286)
 
             Circle()
-                .fill(AppTheme.mist.opacity(0.44))
-                .frame(width: 240, height: 240)
-                .blur(radius: 12)
-                .offset(x: -140, y: 290)
+                .fill(AppTheme.mist.opacity(0.30))
+                .frame(width: 200, height: 200)
+                .blur(radius: 16)
+                .offset(x: -132, y: 308)
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     heroCard
-                    SettingsCard(viewModel: viewModel)
                     calibrationCard
+                    SettingsCard(viewModel: viewModel)
                 }
                 .padding(20)
             }
@@ -55,7 +55,7 @@ struct HomeView: View {
             }
 
             if let baselineAngle = viewModel.baselineAngle {
-                Text("Your live number measures extra bend from standing.")
+                Text("Your live number tracks extra bend beyond standing.")
                     .font(AppType.label(14, weight: .semibold))
                     .foregroundStyle(AppTheme.inkMuted)
 
@@ -87,10 +87,9 @@ struct HomeView: View {
                     .foregroundStyle(AppTheme.inkMuted)
             } else {
                 VStack(alignment: .leading, spacing: 12) {
-                    setupStep(number: "1", title: "Choose pocket", detail: "\(viewModel.settings.pocketSide.rawValue) front pocket, top-up, screen toward thigh")
-                    setupStep(number: "2", title: "Set target bend", detail: "\(viewModel.targetAngleText) of extra bend from standing")
-                    setupStep(number: "3", title: "Calibrate upright", detail: "Stand still for the 3 second countdown")
-                    setupStep(number: "4", title: "Start session", detail: "Skate with the app awake and your phone settled")
+                    setupStep(number: "1", title: "Pocket + target", detail: "\(viewModel.settings.pocketSide.rawValue) pocket, \(viewModel.targetAngleText) target")
+                    setupStep(number: "2", title: "Calibrate upright", detail: "Stand still for the 3 second countdown")
+                    setupStep(number: "3", title: "Start session", detail: "Skate with the app awake and the phone settled")
                 }
             }
 
@@ -105,10 +104,6 @@ struct HomeView: View {
             Text(viewModel.guidanceText)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.inkMuted)
-
-            Text(viewModel.secondaryMetricText)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.inkMuted.opacity(0.85))
         }
         .padding(24)
         .background(
@@ -128,11 +123,11 @@ struct HomeView: View {
                 .font(AppType.title(24))
                 .foregroundStyle(AppTheme.ink)
 
-            Text("Stand upright with the phone settled in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket, then stay still for the full countdown.")
+            Text("This is the main setup step. Stand upright with the phone settled in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket, then stay still for the full countdown.")
                 .font(AppType.label(15, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
-            Text("The app only locks the baseline if the readings stay steady enough. If the pocket is moving, try calibration again.")
+            Text("If the pocket moves too much, calibration will fail and you can try again immediately.")
                 .font(AppType.label(13, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 

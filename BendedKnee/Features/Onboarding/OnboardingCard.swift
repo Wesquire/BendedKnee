@@ -4,40 +4,30 @@ struct OnboardingView: View {
     let dismiss: () -> Void
 
     var body: some View {
-        ZStack {
-            AppTheme.homeBackground.ignoresSafeArea()
+        GeometryReader { geometry in
+            ZStack {
+                AppTheme.homeBackground.ignoresSafeArea()
 
-            Circle()
-                .fill(AppTheme.accentSoft.opacity(0.30))
-                .frame(width: 320, height: 320)
-                .blur(radius: 16)
-                .offset(x: 150, y: -280)
+                Circle()
+                    .fill(AppTheme.accentSoft.opacity(0.16))
+                    .frame(width: 260, height: 260)
+                    .blur(radius: 20)
+                    .offset(x: 120, y: -geometry.size.height * 0.28)
 
-            Circle()
-                .fill(AppTheme.mist.opacity(0.42))
-                .frame(width: 260, height: 260)
-                .blur(radius: 16)
-                .offset(x: -140, y: 320)
+                VStack(alignment: .leading, spacing: 18) {
+                    BendedKneeBrandMark(
+                        iconSize: 86,
+                        titleSize: 32,
+                        subtitle: "Skate lower with a cleaner, calmer setup."
+                    )
 
-            VStack(alignment: .leading, spacing: 14) {
-                Text("FIRST RUN")
-                    .font(AppType.label(13, weight: .bold))
-                    .foregroundStyle(AppTheme.accent)
-                    .tracking(1.5)
-
-                Text("Set the phone once, calibrate upright, then let the app coach your bend while you skate.")
-                    .font(AppType.title(30))
-                    .foregroundStyle(AppTheme.ink)
-
-                Text("This version works with one iPhone in one front pocket while the app stays open during your session.")
-                    .font(AppType.label(15, weight: .semibold))
-                    .foregroundStyle(AppTheme.inkMuted)
-
-                Spacer(minLength: 0)
-
-                OnboardingCard(dismiss: dismiss)
+                    OnboardingCard(dismiss: dismiss)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, max(geometry.safeAreaInsets.top, 20))
+                .padding(.bottom, max(geometry.safeAreaInsets.bottom, 20))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-            .padding(20)
         }
     }
 }
@@ -48,55 +38,42 @@ struct OnboardingCard: View {
 
     private let pages: [OnboardingPage] = [
         OnboardingPage(
-            eyebrow: "FIRST SESSION",
-            title: "What The App Coaches",
-            body: "Bended Knee watches how far your pocket and thigh tilt forward from your normal standing posture. It is a skating coach, not a medical knee-angle tool.",
+            eyebrow: "WHAT IT DOES",
+            title: "Bended Knee coaches depth, not medical angle.",
+            body: "The app uses your phone in one front pocket to estimate how much extra bend you have beyond upright standing.",
             bullets: [
                 "The live number is bend from standing.",
-                "Quiet haptics start when you come up too tall.",
-                "No session history is saved in this version."
+                "Haptics warn you when you rise too tall.",
+                "You keep the app open while skating."
             ],
             symbol: "figure.skating"
         ),
         OnboardingPage(
-            eyebrow: "PHONE PLACEMENT",
-            title: "Pick One Front Pocket",
-            body: "Use the same front pocket you plan to skate with. Keep the phone top-up and the screen facing your thigh every time.",
+            eyebrow: "PLACEMENT",
+            title: "Pick one front pocket and keep it consistent.",
+            body: "Use the same front pocket every session. Keep the phone top-up and the screen facing your thigh.",
             bullets: [
                 "Left or right pocket both work.",
-                "Do not rotate the phone sideways.",
-                "If the phone shifts, recalibrate before skating again."
+                "If the phone shifts, recalibrate.",
+                "Setup will ask for pocket side and target."
             ],
             symbol: "iphone.gen3"
         ),
         OnboardingPage(
-            eyebrow: "CALIBRATE",
-            title: "Stand Still For Three Seconds",
-            body: "Tap calibrate while standing upright. The app waits three seconds, checks for a steady signal, and then locks your standing baseline.",
+            eyebrow: "WHEN YOU SKATE",
+            title: "Calibrate upright, then let the haptics coach you.",
+            body: "Stand still for a 3 second baseline capture. During your session, faster haptics mean you need more knee bend.",
             bullets: [
-                "Target = extra bend beyond standing.",
-                "Start only after the baseline locks.",
-                "If calibration is noisy, the app asks you to try again.",
-                "Do not background the app while skating."
-            ],
-            symbol: "timer"
-        ),
-        OnboardingPage(
-            eyebrow: "SESSION RULES",
-            title: "What Happens While You Skate",
-            body: "Keep the app open. If you rise too upright, haptics get more urgent. If the phone leaves your pocket, coaching pauses until it goes back in.",
-            bullets: [
-                "Below Target means bend more.",
-                "On Target means hold that depth.",
-                "Phone Removed means coaching is paused.",
-                "Feel a sample pulse in Setup before you skate."
+                "Target means extra bend beyond standing.",
+                "If the phone leaves your pocket, coaching pauses.",
+                "You can feel a sample pulse in setup first."
             ],
             symbol: "waveform.path.ecg"
         )
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack {
                 Text("\(pageIndex + 1) / \(pages.count)")
                     .font(AppType.label(12, weight: .bold))
@@ -107,59 +84,64 @@ struct OnboardingCard: View {
 
                 Spacer()
 
-                Text(pageIndex == pages.count - 1 ? "Next: setup" : "Swipe or tap next")
+                Text(pageIndex == pages.count - 1 ? "Ready for setup" : "Next")
                     .font(AppType.label(13, weight: .bold))
                     .foregroundStyle(AppTheme.inkMuted)
             }
 
-            TabView(selection: $pageIndex) {
-                ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
-                    VStack(alignment: .leading, spacing: 18) {
-                        Text(page.eyebrow)
-                            .font(AppType.label(12, weight: .bold))
-                            .foregroundStyle(AppTheme.accent)
-                            .tracking(1.2)
+            HStack(spacing: 8) {
+                ForEach(Array(pages.enumerated()), id: \.offset) { index, _ in
+                    Capsule()
+                        .fill(index == pageIndex ? AppTheme.deepForest : Color.white.opacity(0.66))
+                        .frame(width: index == pageIndex ? 26 : 10, height: 10)
+                }
+            }
 
-                        HStack(alignment: .top, spacing: 18) {
-                            Image(systemName: page.symbol)
-                                .font(.system(size: 34, weight: .medium))
-                                .frame(width: 62, height: 62)
-                                .background(Circle().fill(AppTheme.accentSoft.opacity(0.55)))
+            ScrollView(showsIndicators: false) {
+                let page = pages[pageIndex]
+
+                VStack(alignment: .leading, spacing: 18) {
+                    Text(page.eyebrow)
+                        .font(AppType.label(12, weight: .bold))
+                        .foregroundStyle(AppTheme.accent)
+                        .tracking(1.2)
+
+                    HStack(alignment: .top, spacing: 16) {
+                        Image(systemName: page.symbol)
+                            .font(.system(size: 30, weight: .medium))
+                            .frame(width: 58, height: 58)
+                            .background(Circle().fill(AppTheme.accentSoft.opacity(0.45)))
+                            .foregroundStyle(AppTheme.ink)
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(page.title)
+                                .font(AppType.title(26))
                                 .foregroundStyle(AppTheme.ink)
 
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text(page.title)
-                                    .font(AppType.title(28))
-                                    .foregroundStyle(AppTheme.ink)
-
-                                Text(page.body)
-                                    .font(AppType.label(16, weight: .medium))
-                                    .foregroundStyle(AppTheme.inkMuted)
-                            }
+                            Text(page.body)
+                                .font(AppType.label(16, weight: .medium))
+                                .foregroundStyle(AppTheme.inkMuted)
                         }
+                    }
 
-                        VStack(alignment: .leading, spacing: 12) {
-                            ForEach(page.bullets, id: \.self) { bullet in
-                                HStack(alignment: .top, spacing: 10) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 15, weight: .bold))
-                                        .foregroundStyle(AppTheme.slate)
-                                        .padding(.top, 2)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(page.bullets, id: \.self) { bullet in
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(AppTheme.slate)
+                                    .padding(.top, 2)
 
-                                    Text(bullet)
-                                        .font(AppType.label(15, weight: .medium))
-                                        .foregroundStyle(AppTheme.ink)
-                                }
+                                Text(bullet)
+                                    .font(AppType.label(15, weight: .medium))
+                                    .foregroundStyle(AppTheme.ink)
                             }
                         }
                     }
-                    .tag(index)
-                    .padding(.top, 4)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 6)
             }
-            .frame(height: 312)
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .interactive))
 
             HStack(spacing: 12) {
                 if pageIndex > 0 {
@@ -194,6 +176,7 @@ struct OnboardingCard: View {
             }
         }
         .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(AppTheme.panelStrong)

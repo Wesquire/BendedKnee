@@ -12,16 +12,29 @@ final class HapticsService: HapticsControlling {
     private var engine: CHHapticEngine?
     private var pulseTimer: Timer?
     private var currentZone: HapticZone = .none
+    private var engineRunning = false
 
     func start() {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 
         if engine == nil {
-            engine = try? CHHapticEngine()
-            engine?.isAutoShutdownEnabled = true
+            guard let newEngine = try? CHHapticEngine() else { return }
+            newEngine.isAutoShutdownEnabled = true
+            newEngine.stoppedHandler = { [weak self] reason in
+                self?.engineRunning = false
+            }
+            newEngine.resetHandler = { [weak self] in
+                self?.engineRunning = false
+                try? self?.engine?.start()
+                self?.engineRunning = true
+            }
+            engine = newEngine
         }
 
-        try? engine?.start()
+        if !engineRunning {
+            try? engine?.start()
+            engineRunning = true
+        }
     }
 
     func update(deficit: Double) {
@@ -48,7 +61,8 @@ final class HapticsService: HapticsControlling {
         pulseTimer?.invalidate()
         pulseTimer = nil
         currentZone = .none
-        try? engine?.stop()
+        engine?.stop(completionHandler: { _ in })
+        engineRunning = false
     }
 
     private func playPulse(for zone: HapticZone) {
@@ -57,7 +71,7 @@ final class HapticsService: HapticsControlling {
 
     private func playSamplePulse(intensity: Float, sharpness: Float) {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
-        start()
+        if !engineRunning { start() }
 
         let intensityParameter = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
         let sharpnessParameter = CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)

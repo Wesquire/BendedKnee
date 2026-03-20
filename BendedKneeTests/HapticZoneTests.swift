@@ -76,6 +76,13 @@ final class HapticZoneTests: XCTestCase {
         XCTAssertGreaterThan(HapticZone.medium.interval, HapticZone.strong.interval)
     }
 
+    func testIntervals_matchApprovedCoachingCadence() {
+        XCTAssertEqual(HapticZone.none.interval, 0)
+        XCTAssertEqual(HapticZone.gentle.interval, 0.75, accuracy: 0.001)
+        XCTAssertEqual(HapticZone.medium.interval, 0.5, accuracy: 0.001)
+        XCTAssertEqual(HapticZone.strong.interval, 0.33, accuracy: 0.001)
+    }
+
     func testStrongZone_intensitySubtle() {
         XCTAssertLessThanOrEqual(HapticZone.strong.intensity, 0.5)
     }

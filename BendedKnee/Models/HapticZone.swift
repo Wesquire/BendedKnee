@@ -24,11 +24,11 @@ enum HapticZone: Equatable {
         case .none:
             return 0
         case .gentle:
-            return 2.4
-        case .medium:
-            return 1.25
-        case .strong:
             return 0.75
+        case .medium:
+            return 0.5
+        case .strong:
+            return 0.33
         }
     }
 

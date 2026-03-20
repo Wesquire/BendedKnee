@@ -17,16 +17,21 @@ struct RootView: View {
             }
         }
         .task {
-            if scenePhase == .active {
+            if scenePhase == .active && !viewModel.showOnboarding {
                 viewModel.start()
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
+            if newPhase == .active && !viewModel.showOnboarding {
                 viewModel.start()
             }
             if newPhase == .background {
                 viewModel.handleAppMovedOutOfForeground()
+            }
+        }
+        .onChange(of: viewModel.showOnboarding) { _, isShowingOnboarding in
+            if !isShowingOnboarding && scenePhase == .active {
+                viewModel.start()
             }
         }
     }

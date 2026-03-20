@@ -77,3 +77,17 @@
 - Real-device validation has not been completed in this environment.
 - Fine-tuning haptic subtlety for actual skating still requires hardware testing.
 - Combined one-shot all-tests execution is still vulnerable to `CoreSimulator` / Xcode runner instability on this machine, despite green final split suites.
+
+## Final Refinement Pass
+
+- A new final-pass review agent was spawned to audit onboarding, setup hierarchy, session usability, and copy load.
+- Returned review findings queued for implementation:
+  - raise the calibration CTA so it is not buried below the fold
+  - remove duplicate stop controls from the session screen
+  - trim repeated instructional copy across onboarding, setup, and home
+- The approved haptic cadence for this pass is:
+  - none `0`
+  - gentle `0.75`
+  - medium `0.5`
+  - strong `0.33`
+- The final-pass work is being tracked in [`FINAL_REFINEMENT_MASTER_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_REFINEMENT_MASTER_PLAN.md) and [`PHASE_7_ENTRY_UX_HAPTICS.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_7_ENTRY_UX_HAPTICS.md)

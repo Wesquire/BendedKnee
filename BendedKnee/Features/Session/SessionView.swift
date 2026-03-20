@@ -69,20 +69,6 @@ struct SessionView: View {
             }
             .padding(24)
         }
-        .overlay(alignment: .bottom) {
-            Button(action: viewModel.stopSession) {
-                Text("End Session")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.white.opacity(0.08))
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
-            .accessibilityIdentifier("endSessionFooterButton")
-        }
     }
 
     private var angleColor: Color {

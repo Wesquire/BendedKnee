@@ -43,7 +43,8 @@ final class BendedKneeUITests: XCTestCase {
 
         advanceOnboarding(in: app)
         XCTAssertTrue(app.segmentedControls["pocketSidePicker"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["samplePulseButton"].exists)
+        tap(app.buttons["Preview & Help"])
+        XCTAssertTrue(app.buttons["samplePulseButton"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["reopenOnboardingButton"].exists)
     }
 
@@ -51,6 +52,7 @@ final class BendedKneeUITests: XCTestCase {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
+        tap(app.buttons["Preview & Help"])
         let reopenButton = app.buttons["reopenOnboardingButton"]
         XCTAssertTrue(reopenButton.waitForExistence(timeout: 2))
         tap(reopenButton)
@@ -63,6 +65,13 @@ final class BendedKneeUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.buttons["calibrateButton"].exists)
+    }
+
+    func testSplashAppearsWhenRequestedInUITests() {
+        let app = launchApp(arguments: ["UITESTING", "SHOW_SPLASH", "FAST_SPLASH", "FAST_CALIBRATION"])
+
+        XCTAssertTrue(app.otherElements["splashView"].waitForExistence(timeout: 1))
+        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 3))
     }
 
     func testCalibrationFailureShowsHelpfulMessage() {
