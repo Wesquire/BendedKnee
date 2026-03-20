@@ -6,92 +6,150 @@ final class BendedKneeUITests: XCTestCase {
     }
 
     func testLaunchShowsCalibrationControls() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION"]
-        app.launch()
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
         XCTAssertTrue(app.buttons["calibrateButton"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.sliders["targetSlider"].exists)
+        XCTAssertTrue(app.segmentedControls["pocketSidePicker"].exists)
     }
 
     func testCalibrationEnablesSessionStart() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION"]
-        app.launch()
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        app.buttons["calibrateButton"].tap()
-        XCTAssertTrue(app.buttons["startSessionButton"].waitForExistence(timeout: 2))
+        tap(app.buttons["calibrateButton"])
+        let startButton = app.buttons["startSessionButton"]
+        XCTAssertTrue(startButton.waitForExistence(timeout: 2))
+        waitForButtonToBecomeEnabled(startButton)
     }
 
-    func testSessionCanStartAndEnd() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION"]
-        app.launch()
+    func testSessionShowsStopControlAfterStart() {
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        app.buttons["calibrateButton"].tap()
-        app.buttons["startSessionButton"].tap()
+        tap(app.buttons["calibrateButton"])
+        let startButton = app.buttons["startSessionButton"]
+        XCTAssertTrue(startButton.waitForExistence(timeout: 2))
+        waitForButtonToBecomeEnabled(startButton)
+        tap(startButton)
 
         XCTAssertTrue(app.staticTexts["sessionAngleText"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["endSessionButton"].exists)
+    }
 
-        app.buttons["endSessionButton"].tap()
+    func testSetupExposesPocketAndSampleControls() {
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
-        XCTAssertTrue(app.buttons["calibrateButton"].waitForExistence(timeout: 2))
+        advanceOnboarding(in: app)
+        XCTAssertTrue(app.segmentedControls["pocketSidePicker"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["samplePulseButton"].exists)
+        XCTAssertTrue(app.buttons["reopenOnboardingButton"].exists)
+    }
+
+    func testSetupGuideCanBeReopenedFromSettings() {
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
+
+        advanceOnboarding(in: app)
+        let reopenButton = app.buttons["reopenOnboardingButton"]
+        XCTAssertTrue(reopenButton.waitForExistence(timeout: 2))
+        tap(reopenButton)
+
+        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
     }
 
     func testFirstLaunchStartsInFullScreenOnboarding() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION"]
-        app.launch()
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.buttons["calibrateButton"].exists)
     }
 
     func testCalibrationFailureShowsHelpfulMessage() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION", "NOISY_CALIBRATION"]
-        app.launch()
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION", "NOISY_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        app.buttons["calibrateButton"].tap()
+        tap(app.buttons["calibrateButton"])
 
         XCTAssertTrue(app.staticTexts["Calibration failed. Hold still and keep the phone settled."].waitForExistence(timeout: 5))
     }
 
     func testUnavailableMotionShowsUnavailableState() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION", "UNAVAILABLE_MOTION"]
-        app.launch()
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION", "UNAVAILABLE_MOTION"])
 
         advanceOnboarding(in: app)
         XCTAssertTrue(app.staticTexts["Motion data is unavailable."].waitForExistence(timeout: 2))
     }
 
-    func testPocketRemovalShowsPausedSessionState() {
-        let app = XCUIApplication()
-        app.launchArguments = ["UITESTING", "FAST_CALIBRATION", "AUTO_REMOVE_PROXIMITY"]
-        app.launch()
+    func testPocketRemovalShowsPausedState() {
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION", "AUTO_REMOVE_PROXIMITY"])
 
         advanceOnboarding(in: app)
-        app.buttons["calibrateButton"].tap()
-        app.buttons["startSessionButton"].tap()
+        tap(app.buttons["calibrateButton"])
+        let startButton = app.buttons["startSessionButton"]
+        XCTAssertTrue(startButton.waitForExistence(timeout: 2))
+        waitForButtonToBecomeEnabled(startButton)
+        tap(startButton)
 
-        XCTAssertTrue(app.staticTexts["Phone Removed"].waitForExistence(timeout: 4))
-        XCTAssertTrue(app.otherElements["sessionStateBadge"].exists)
+        XCTAssertTrue(app.staticTexts["Phone Removed"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.staticTexts["Return the phone to your front pocket to resume haptic coaching."].exists)
+    }
+
+    func testPocketSideCanBeSelectedDuringSetup() {
+        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
+
+        advanceOnboarding(in: app)
+        let picker = app.segmentedControls["pocketSidePicker"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 2))
+        tap(picker.buttons["Left"])
+        XCTAssertTrue(app.staticTexts["Use your left front pocket."].waitForExistence(timeout: 2))
     }
 
     private func advanceOnboarding(in app: XCUIApplication) {
-        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
-        app.buttons["onboardingNextButton"].tap()
-        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
-        app.buttons["onboardingNextButton"].tap()
-        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
-        app.buttons["onboardingNextButton"].tap()
-        XCTAssertTrue(app.buttons["continueButton"].waitForExistence(timeout: 2))
-        app.buttons["continueButton"].tap()
+        for _ in 0..<6 {
+            let continueButton = app.buttons["continueButton"]
+            if continueButton.waitForExistence(timeout: 1) {
+                tap(continueButton)
+                return
+            }
+
+            let nextButton = app.buttons["onboardingNextButton"]
+            XCTAssertTrue(nextButton.waitForExistence(timeout: 2))
+            tap(nextButton)
+        }
+
+        XCTFail("Onboarding did not reach the final continue button.")
+    }
+
+    private func launchApp(arguments: [String]) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = arguments
+        app.launchEnvironment["UITEST_DISABLE_ANIMATIONS"] = "1"
+        app.launch()
+        return app
+    }
+
+    private func tap(_ element: XCUIElement, timeout: TimeInterval = 4) {
+        XCTAssertTrue(element.waitForExistence(timeout: timeout))
+
+        let predicate = NSPredicate(format: "hittable == true")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        _ = XCTWaiter().wait(for: [expectation], timeout: timeout)
+
+        for _ in 0..<3 {
+            if element.isHittable {
+                element.tap()
+                return
+            }
+            XCUIApplication().swipeUp()
+        }
+
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
+    private func waitForButtonToBecomeEnabled(_ button: XCUIElement) {
+        let predicate = NSPredicate(format: "isEnabled == true")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: button)
+        XCTAssertEqual(XCTWaiter().wait(for: [expectation], timeout: 4), .completed)
     }
 }

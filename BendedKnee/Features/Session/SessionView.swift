@@ -9,9 +9,23 @@ struct SessionView: View {
 
             VStack(spacing: 22) {
                 VStack(spacing: 12) {
-                    Text("Bended Knee")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(0.55))
+                    HStack {
+                        Text("Bended Knee")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.white.opacity(0.70))
+
+                        Spacer()
+
+                        Button(action: viewModel.stopSession) {
+                            Text("End")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Capsule().fill(Color.white.opacity(0.10)))
+                                .foregroundStyle(.white)
+                        }
+                        .accessibilityIdentifier("endSessionButton")
+                    }
 
                     stateBadge
 
@@ -30,37 +44,44 @@ struct SessionView: View {
 
                 progressPanel
 
+                if viewModel.sessionPhase == .pausedPocketRemoved {
+                    pausedBanner
+                }
+
                 Text(viewModel.primarySessionTitle)
                     .font(.system(size: 24, weight: .heavy, design: .rounded))
-                    .foregroundStyle(angleColor)
+                    .foregroundStyle(viewModel.sessionPhase == .pausedPocketRemoved ? .white : angleColor)
                     .accessibilityIdentifier("sessionStatusText")
 
                 Text(viewModel.primarySessionDetail)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.white.opacity(0.65))
+                    .foregroundStyle(Color.white.opacity(0.78))
                     .padding(.horizontal, 18)
 
                 Text("Need a new target? End the session and change it in setup before skating again.")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.white.opacity(0.52))
+                    .foregroundStyle(Color.white.opacity(0.62))
                     .padding(.horizontal, 24)
 
-                Spacer()
-
-                Button(action: viewModel.stopSession) {
-                    Text("End Session")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.white.opacity(0.08))
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                }
-                .accessibilityIdentifier("endSessionButton")
+                Spacer(minLength: 12)
             }
             .padding(24)
+        }
+        .overlay(alignment: .bottom) {
+            Button(action: viewModel.stopSession) {
+                Text("End Session")
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(Color.white.opacity(0.08))
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+            .accessibilityIdentifier("endSessionFooterButton")
         }
     }
 
@@ -107,15 +128,15 @@ struct SessionView: View {
 
             Text(viewModel.sessionPhase == .pausedPocketRemoved ? "Return the phone to your front pocket to resume coaching." : "This session view stays awake so motion tracking and haptics remain active.")
                 .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.58))
+                .foregroundStyle(Color.white.opacity(0.72))
         }
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.10 : 0.08))
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
                 )
         )
     }
@@ -133,6 +154,28 @@ struct SessionView: View {
         .padding(.vertical, 8)
         .background(Capsule().fill(sessionBadgeBackground))
         .accessibilityIdentifier("sessionStateBadge")
+    }
+
+    private var pausedBanner: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Phone Removed")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+            Text("Return the phone to your front pocket to resume haptic coaching.")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.78))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                )
+        )
+        .accessibilityIdentifier("pausedPocketRemovedBanner")
     }
 
     private var sessionBadgeForeground: Color {

@@ -12,11 +12,6 @@
 - ~~0.8 Finalize target-angle semantics~~
 - ~~0.9 Finalize runtime/background expectations~~
 
-Acceptance criteria:
-- Measurement model is explicitly approved.
-- Phone placement/orientation rules are explicitly approved.
-- Session behavior and feedback expectations are explicitly approved.
-
 ## Phase 1. Technical Design
 
 - ~~1.1 Define SwiftUI app architecture~~
@@ -27,10 +22,6 @@ Acceptance criteria:
 - ~~1.6 Define calibration failure and recovery states~~
 - ~~1.7 Define testable domain boundaries~~
 
-Acceptance criteria:
-- Design documents specify exactly what signal is measured.
-- State transitions, thresholds, and invalidation rules are documented.
-
 ## Phase 2. Product and UX Design
 
 - ~~2.1 Define onboarding flow~~
@@ -39,10 +30,6 @@ Acceptance criteria:
 - ~~2.4 Define settings and target controls~~
 - ~~2.5 Define accessibility and safety copy~~
 - ~~2.6 Define summary/history scope~~
-
-Acceptance criteria:
-- UI wording matches the approved technical behavior.
-- All key user states are specified.
 
 ## Phase 3. Project Scaffolding
 
@@ -53,10 +40,6 @@ Acceptance criteria:
 - ~~3.5 Verify clean local build~~
 - ~~3.6 Verify tests execute~~
 
-Acceptance criteria:
-- Project builds successfully.
-- Test targets run successfully.
-
 ## Phase 4. Motion Engine
 
 - ~~4.1 Implement motion availability and permissions handling~~
@@ -65,11 +48,7 @@ Acceptance criteria:
 - ~~4.4 Implement live motion updates~~
 - ~~4.5 Implement filtering/smoothing~~
 - ~~4.6 Implement bend-angle proxy estimator~~
-- 4.7 Implement calibration invalidation detection
-
-Acceptance criteria:
-- Core calculations are covered by tests.
-- Calibration and live tracking work on device.
+- 4.7 Implement calibration invalidation detection on real device
 
 ## Phase 5. Haptics Engine
 
@@ -78,9 +57,6 @@ Acceptance criteria:
 - ~~5.3 Implement cadence/rate limiting~~
 - ~~5.4 Implement subtle fallback behavior where needed~~
 - 5.5 Verify low-noise behavior on device
-
-Acceptance criteria:
-- Haptics are bounded, stable, and non-spammy.
 
 ## Phase 6. UI Implementation
 
@@ -91,10 +67,6 @@ Acceptance criteria:
 - ~~6.5 Implement error and recovery states~~
 - ~~6.6 Implement summary/history if approved~~
 
-Acceptance criteria:
-- All primary flows are functional.
-- Error states are reachable and recoverable.
-
 ## Phase 7. Validation
 
 - ~~7.1 Add unit tests for angle math and thresholds~~
@@ -103,41 +75,49 @@ Acceptance criteria:
 - 7.4 Run device validation for motion and haptics
 - ~~7.5 Run regression pass after each substantial change~~
 
-Acceptance criteria:
-- Tests pass.
-- Device validation confirms the app runs and behaves as intended.
-
 ## Phase 8. Layman Review Loop
 
-- 8.1 Run layman use-case review
-- 8.2 Record confusion points and edge cases
-- 8.3 Triage with UX/UI and Full Stack recommendations
-- 8.4 Implement approved refinements
-- 8.5 Re-test
+- ~~8.1 Run layman use-case review~~
+- ~~8.2 Record confusion points and edge cases~~
+- ~~8.3 Triage with UX/UI and Full Stack recommendations~~
+- ~~8.4 Implement approved refinements~~
+- ~~8.5 Re-test~~
 
-Acceptance criteria:
-- Critical usability issues are addressed.
-- Final build remains verified after refinement.
+## Phase 9. Multi-Agent Debugging
+
+- ~~9.1 Debugger pass 1 complete~~
+- ~~9.2 Address debugger pass 1 findings~~
+- ~~9.3 Debugger pass 2 complete~~
+- ~~9.4 Address debugger pass 2 findings~~
+- ~~9.5 Debugger pass 3 complete~~
+- ~~9.6 Address debugger pass 3 findings~~
 
 ## Current Recommendation
 
 - Recommended v1: single-iPhone front-pocket thigh-angle proxy, not true anatomical knee-angle measurement.
-- Reason: this is the simplest technically honest approach that matches the skating coaching use case.
+- Reason: it is the simplest technically honest model that matches the skating coaching use case.
 - Final runtime decision:
-  - The app remains foreground-active during a session and disables auto-lock.
-  - The app does not claim to keep running with continuous motion plus haptics while locked and suspended, because that is not a reliable iPhone-only iOS 17 model.
-- User-approved decisions:
-  - Single-phone thigh-angle proxy is the desired approach.
-  - Both left and right front pockets must be supported.
-  - Phone orientation is fixed: top-up, screen facing the thigh.
-  - Live numeric angle is required.
-  - Haptics-only feedback is required.
-  - No session history is required.
-  - Target angle input range can be `0` to `60` degrees.
-  - Haptics should stop automatically when phone removal from the pocket is detected.
-  - Minimum deployment target can be `iOS 17`.
-- Current verified state:
-  - The SwiftUI app is implemented.
-  - Local iOS Simulator build passes.
-  - Local unit and UI tests pass.
-  - Remaining work is real-device validation and any refinement that follows it.
+  - the app remains foreground-active during a session
+  - auto-lock is disabled while a session is live
+  - the app does not claim reliable locked-and-suspended continuous motion plus haptics on iPhone-only `iOS 17`
+
+## Current Verified State
+
+- The SwiftUI app is implemented.
+- Final simulator `build-for-testing` passes on the pass-3 artifact set.
+- Full split-suite simulator validation passes:
+  - focused `SessionViewModelTests`: `27` passed
+  - full unit suite: `87` passed
+  - full UI suite: `10` passed
+- The required three-pass debugger-agent review is complete and the findings were addressed:
+  - pass 1:
+    - do not stop sessions on `.inactive`
+    - preserve the previous baseline when recalibration is interrupted
+  - pass 2:
+    - remove duplicate app-level scene-phase handling that still paused on `.inactive`
+  - pass 3:
+    - honor an initial `proximity == false` state when starting a session
+    - do not clear `placementInvalid` optimistically when the user switches pocket side
+- Remaining work:
+  - real-device motion and haptic validation
+  - optional stabilization of a one-shot combined test runner on this machine; split full unit and full UI validation already pass

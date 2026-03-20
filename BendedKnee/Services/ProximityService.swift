@@ -56,6 +56,7 @@ final class PreviewProximityService: ProximityMonitoring {
 
     private let mode: Mode
     private var scheduledChange: DispatchWorkItem?
+    private var handler: ((Bool) -> Void)?
 
     init(mode: Mode = .steadyNear) {
         self.mode = mode
@@ -65,11 +66,15 @@ final class PreviewProximityService: ProximityMonitoring {
     var currentState: Bool = true
 
     func start(handler: @escaping (Bool) -> Void) {
+        self.handler = handler
         handler(currentState)
         if case .autoRemove(let delay) = mode {
             let workItem = DispatchWorkItem { [weak self] in
-                self?.currentState = false
-                handler(false)
+                self?.emit(false)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                    guard self?.currentState == false else { return }
+                    self?.handler?(false)
+                }
             }
             scheduledChange = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
@@ -79,5 +84,11 @@ final class PreviewProximityService: ProximityMonitoring {
     func stop() {
         scheduledChange?.cancel()
         scheduledChange = nil
+        handler = nil
+    }
+
+    private func emit(_ isNear: Bool) {
+        currentState = isNear
+        handler?(isNear)
     }
 }

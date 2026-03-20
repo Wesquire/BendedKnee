@@ -32,13 +32,30 @@ struct HomeView: View {
 
     private var heroCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(viewModel.baselineAngle == nil ? "SETUP FLOW" : "LIVE READY")
+            Text(viewModel.setupSummaryTitle.uppercased())
                 .font(AppType.label(12, weight: .bold))
                 .foregroundStyle(AppTheme.inkMuted)
                 .tracking(1.2)
 
+            Text(viewModel.setupSummaryDetail)
+                .font(AppType.label(16, weight: .semibold))
+                .foregroundStyle(viewModel.baselineAngle == nil ? AppTheme.ink : AppTheme.inkMuted)
+
+            HStack(spacing: 14) {
+                setupMetric(
+                    title: "Pocket",
+                    value: viewModel.settings.pocketSide.rawValue,
+                    emphasis: AppTheme.deepForest
+                )
+                setupMetric(
+                    title: "Target",
+                    value: viewModel.targetAngleText,
+                    emphasis: AppTheme.accent
+                )
+            }
+
             if let baselineAngle = viewModel.baselineAngle {
-                Text("Your target is measured as extra bend beyond your upright standing baseline.")
+                Text("Your live number measures extra bend from standing.")
                     .font(AppType.label(14, weight: .semibold))
                     .foregroundStyle(AppTheme.inkMuted)
 
@@ -69,32 +86,11 @@ struct HomeView: View {
                     .font(AppType.label(14, weight: .medium))
                     .foregroundStyle(AppTheme.inkMuted)
             } else {
-                Text("Set your target, calibrate while standing tall, then start skating with the phone in your front pocket.")
-                    .font(AppType.label(16, weight: .semibold))
-                    .foregroundStyle(AppTheme.ink)
-
                 VStack(alignment: .leading, spacing: 12) {
-                    setupStep(number: "1", title: "Set target bend", detail: "\(viewModel.targetAngleText) of extra bend from standing")
-                    setupStep(number: "2", title: "Calibrate upright", detail: "Hold still for the 3 second countdown")
-                    setupStep(number: "3", title: "Start session", detail: "Skate with the app awake and your phone settled")
-                }
-
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Current target")
-                            .font(AppType.label(14, weight: .bold))
-                            .foregroundStyle(AppTheme.inkMuted)
-                        Text(viewModel.targetAngleText)
-                            .font(AppType.display(44))
-                            .foregroundStyle(AppTheme.accent)
-                    }
-
-                    Spacer()
-
-                    Text("Example: if standing tilt is 6° and your target is 20°, the app coaches you toward about 26° live tilt.")
-                        .font(AppType.label(13, weight: .medium))
-                        .foregroundStyle(AppTheme.inkMuted)
-                        .frame(maxWidth: 180, alignment: .trailing)
+                    setupStep(number: "1", title: "Choose pocket", detail: "\(viewModel.settings.pocketSide.rawValue) front pocket, top-up, screen toward thigh")
+                    setupStep(number: "2", title: "Set target bend", detail: "\(viewModel.targetAngleText) of extra bend from standing")
+                    setupStep(number: "3", title: "Calibrate upright", detail: "Stand still for the 3 second countdown")
+                    setupStep(number: "4", title: "Start session", detail: "Skate with the app awake and your phone settled")
                 }
             }
 
@@ -128,12 +124,16 @@ struct HomeView: View {
 
     private var calibrationCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Calibration")
+            Text(viewModel.setupStepTitle)
                 .font(AppType.title(24))
                 .foregroundStyle(AppTheme.ink)
 
-            Text("Stand upright, keep the phone settled in your skating pocket, and stay still for the full countdown.")
+            Text("Stand upright with the phone settled in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket, then stay still for the full countdown.")
                 .font(AppType.label(15, weight: .medium))
+                .foregroundStyle(AppTheme.inkMuted)
+
+            Text("The app only locks the baseline if the readings stay steady enough. If the pocket is moving, try calibration again.")
+                .font(AppType.label(13, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
             if case .calibrating(let secondsRemaining) = viewModel.sessionPhase {
@@ -146,7 +146,7 @@ struct HomeView: View {
             }
 
             Button(action: viewModel.beginCalibration) {
-                Text("Calibrate Standing Position")
+                Text(viewModel.baselineAngle == nil ? "Calibrate Standing Position" : "Recalibrate Standing Position")
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
@@ -226,5 +226,22 @@ struct HomeView: View {
                     .foregroundStyle(AppTheme.inkMuted)
             }
         }
+    }
+
+    private func setupMetric(title: String, value: String, emphasis: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(AppType.label(12, weight: .bold))
+                .foregroundStyle(AppTheme.inkMuted)
+            Text(value)
+                .font(AppType.title(22))
+                .foregroundStyle(emphasis)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.82))
+        )
     }
 }

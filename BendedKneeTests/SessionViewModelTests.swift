@@ -1,5 +1,6 @@
 import CoreMotion
 import Foundation
+import SwiftUI
 import XCTest
 @testable import BendedKnee
 
@@ -143,6 +144,36 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.statusText, "Calibration failed. Hold still and keep the phone settled.")
     }
 
+    func testCalibrationFailsWhenTooFewSamplesAreCollected() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 4,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        XCTAssertEqual(viewModel.sessionPhase, .idle)
+        XCTAssertNil(viewModel.baselineAngle)
+        XCTAssertEqual(viewModel.statusText, "Calibration failed. Hold still and keep the phone settled.")
+    }
+
     func testUnavailableMotionShowsUnavailableState() {
         let motion = MockMotionService()
         motion.isAvailable = false
@@ -217,6 +248,156 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.settings.targetAngle, AppSettings.targetRange.upperBound)
     }
 
+    func testPocketSidePersistsAndUpdatesGuidance() {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.setPocketSide(.left)
+
+        XCTAssertEqual(viewModel.settings.pocketSide, .left)
+        XCTAssertEqual(defaults.string(forKey: "pocketSide"), PocketSide.left.rawValue)
+        XCTAssertTrue(viewModel.guidanceText.contains("left front pocket"))
+    }
+
+    func testChangingPocketSideKeepsPlacementInvalidUntilRevalidated() {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(gravity: CMAcceleration(x: 0, y: 0.9, z: 0.1))
+        XCTAssertTrue(viewModel.placementInvalid)
+
+        viewModel.setPocketSide(.left)
+
+        XCTAssertTrue(viewModel.placementInvalid)
+        XCTAssertEqual(viewModel.statusText, "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh.")
+    }
+
+    func testRunningSessionExposesReadablePrimaryState() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        viewModel.startSession()
+        motion.emit(angle: 8)
+
+        XCTAssertEqual(viewModel.primarySessionTitle, "Below Target")
+        XCTAssertEqual(viewModel.sessionBadgeText, "Below Target")
+    }
+
+    func testPausedPocketRemovalExposesReadablePrimaryState() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        viewModel.startSession()
+        proximity.emit(false)
+
+        XCTAssertEqual(viewModel.primarySessionTitle, "Phone Removed")
+        XCTAssertEqual(viewModel.sessionBadgeText, "Phone Removed")
+        XCTAssertTrue(viewModel.primarySessionDetail.contains("resume automatically"))
+    }
+
+    func testStartSessionImmediatelyPausesWhenPhoneIsAlreadyOutOfPocket() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        proximity.currentState = false
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        viewModel.startSession()
+
+        XCTAssertEqual(viewModel.sessionPhase, .pausedPocketRemoved)
+        XCTAssertEqual(viewModel.statusText, "Phone removed. Haptics paused.")
+    }
+
     func testReopenOnboardingSetsPresentationFlag() {
         let motion = MockMotionService()
         let proximity = MockProximityService()
@@ -237,6 +418,431 @@ final class SessionViewModelTests: XCTestCase {
         viewModel.reopenOnboarding()
         XCTAssertTrue(viewModel.showOnboarding)
     }
+
+    func testPlayHapticSampleTriggersPreviewPulse() {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            defaults: defaults
+        )
+
+        viewModel.playHapticSample()
+
+        XCTAssertEqual(haptics.samplePulseCount, 1)
+    }
+
+    func testPocketSideSettingPersistsAcrossViewModels() {
+        let suiteName = #function
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let firstViewModel = SessionViewModel(
+            motionService: MockMotionService(),
+            proximityService: MockProximityService(),
+            hapticsService: MockHapticsService(),
+            defaults: defaults
+        )
+        firstViewModel.setPocketSide(.left)
+
+        let secondViewModel = SessionViewModel(
+            motionService: MockMotionService(),
+            proximityService: MockProximityService(),
+            hapticsService: MockHapticsService(),
+            defaults: defaults
+        )
+
+        XCTAssertEqual(secondViewModel.settings.pocketSide, .left)
+    }
+
+    func testChangingPocketSideAllowsMirroredPlacementToValidate() {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(gravity: CMAcceleration(x: -0.90, y: -0.15, z: 0.12))
+        XCTAssertTrue(viewModel.placementInvalid)
+
+        viewModel.setPocketSide(.left)
+        motion.emit(gravity: CMAcceleration(x: -0.20, y: -0.95, z: 0.12))
+
+        XCTAssertFalse(viewModel.placementInvalid)
+    }
+
+    func testStopSessionReturnsReadyStateAfterRunningSession() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        viewModel.startSession()
+        XCTAssertEqual(viewModel.sessionPhase, .running)
+
+        viewModel.stopSession()
+
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.statusText, "Session stopped.")
+    }
+
+    func testTestingAutoPauseTransitionsRunningSessionToPausedPocketRemoved() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            testingAutoPauseAfterNanoseconds: 1_000_000,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        viewModel.startSession()
+        try? await Task.sleep(nanoseconds: 10_000_000)
+
+        XCTAssertEqual(viewModel.sessionPhase, .pausedPocketRemoved)
+        XCTAssertEqual(viewModel.statusText, "Phone removed. Haptics paused.")
+        XCTAssertGreaterThan(haptics.stopCount, 0)
+    }
+
+    func testFailedRecalibrationKeepsPreviousBaseline() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+        let originalBaseline = viewModel.baselineAngle
+
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 2)
+        motion.emit(angle: 12)
+        motion.emit(angle: 20)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.baselineAngle, originalBaseline)
+        XCTAssertEqual(viewModel.statusText, "Calibration failed. Previous baseline kept.")
+    }
+
+    func testStartSessionIsBlockedWhileCalibrationIsRunning() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 10_000_000,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+
+        viewModel.startSession()
+
+        XCTAssertEqual(viewModel.sessionPhase, .calibrating(secondsRemaining: 3))
+        XCTAssertEqual(viewModel.statusText, "Finish calibration before starting.")
+    }
+
+    func testBackgroundTransitionStopsRunningSession() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+
+        viewModel.startSession()
+        XCTAssertEqual(viewModel.sessionPhase, .running)
+
+        viewModel.handleAppMovedOutOfForeground()
+
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.statusText, "Session paused because the app left the foreground.")
+    }
+
+    func testBackgroundTransitionCancelsCalibrationAndRestoresPreviousBaseline() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+        let originalBaseline = viewModel.baselineAngle
+
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 12)
+        viewModel.handleAppMovedOutOfForeground()
+        try? await Task.sleep(nanoseconds: 10_000_000)
+
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.baselineAngle, originalBaseline)
+        XCTAssertEqual(viewModel.statusText, "Calibration paused because the app left the foreground.")
+    }
+
+    func testSecondCalibrationCancelsFirstTaskWithoutRestoringStaleResult() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 10_000_000,
+            minimumCalibrationSamples: 2,
+            maximumCalibrationSpreadDegrees: 1,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 12)
+        motion.emit(angle: 12)
+        try? await Task.sleep(nanoseconds: 40_000_000)
+
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.baselineAngle.map { Int($0.rounded()) }, 12)
+    }
+
+    func testInvalidPlacementPreventsSessionStart() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+        motion.emit(gravity: CMAcceleration(x: 0, y: 0.9, z: 0.1))
+
+        viewModel.startSession()
+
+        XCTAssertTrue(viewModel.placementInvalid)
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.statusText, "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh.")
+    }
+
+    func testInvalidPlacementStopsCoachingDuringRunningSession() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+        viewModel.startSession()
+
+        motion.emit(gravity: CMAcceleration(x: 0, y: -0.86, z: -0.3))
+
+        XCTAssertTrue(viewModel.placementInvalid)
+        XCTAssertEqual(viewModel.currentAngle, 0, accuracy: 0.001)
+        XCTAssertEqual(viewModel.statusText, "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh.")
+        XCTAssertGreaterThan(haptics.stopCount, 0)
+    }
+
+    func testStopSessionDuringRecalibrationRestoresPreviousBaseline() async {
+        let motion = MockMotionService()
+        let proximity = MockProximityService()
+        let haptics = MockHapticsService()
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let viewModel = SessionViewModel(
+            motionService: motion,
+            proximityService: proximity,
+            hapticsService: haptics,
+            calibrationTickNanoseconds: 1_000_000,
+            minimumCalibrationSamples: 3,
+            maximumCalibrationSpreadDegrees: 2,
+            defaults: defaults
+        )
+
+        viewModel.dismissOnboarding()
+        viewModel.start()
+        motion.emit(angle: 5)
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        motion.emit(angle: 5)
+        try? await Task.sleep(nanoseconds: 25_000_000)
+        let originalBaseline = viewModel.baselineAngle
+
+        viewModel.beginCalibration()
+        try? await Task.sleep(nanoseconds: 2_000_000)
+        motion.emit(angle: 12)
+
+        viewModel.stopSession()
+        try? await Task.sleep(nanoseconds: 10_000_000)
+
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
+        XCTAssertEqual(viewModel.baselineAngle, originalBaseline)
+        XCTAssertEqual(viewModel.statusText, "Session stopped.")
+    }
 }
 
 private final class MockMotionService: MotionServiceProtocol {
@@ -252,6 +858,10 @@ private final class MockMotionService: MotionServiceProtocol {
     func emit(angle: Double) {
         let radians = angle * .pi / 180
         let gravity = CMAcceleration(x: 0, y: -cos(radians), z: sin(radians))
+        handler?(MotionSnapshot(gravity: gravity, timestamp: 0))
+    }
+
+    func emit(gravity: CMAcceleration) {
         handler?(MotionSnapshot(gravity: gravity, timestamp: 0))
     }
 }
@@ -276,9 +886,13 @@ private final class MockProximityService: ProximityMonitoring {
 
 private final class MockHapticsService: HapticsControlling {
     private(set) var stopCount = 0
+    private(set) var samplePulseCount = 0
 
     func start() {}
     func update(deficit: Double) {}
+    func playSamplePulse() {
+        samplePulseCount += 1
+    }
 
     func stopAll() {
         stopCount += 1

@@ -19,15 +19,21 @@ struct OnboardingView: View {
                 .blur(radius: 16)
                 .offset(x: -140, y: 320)
 
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Get Ready To Skate")
+            VStack(alignment: .leading, spacing: 14) {
+                Text("FIRST RUN")
                     .font(AppType.label(13, weight: .bold))
                     .foregroundStyle(AppTheme.accent)
                     .tracking(1.5)
 
-                Text("Learn the setup once, then calibrate and skate.")
-                    .font(AppType.title(34))
+                Text("Set the phone once, calibrate upright, then let the app coach your bend while you skate.")
+                    .font(AppType.title(30))
                     .foregroundStyle(AppTheme.ink)
+
+                Text("This version works with one iPhone in one front pocket while the app stays open during your session.")
+                    .font(AppType.label(15, weight: .semibold))
+                    .foregroundStyle(AppTheme.inkMuted)
+
+                Spacer(minLength: 0)
 
                 OnboardingCard(dismiss: dismiss)
             }
@@ -43,21 +49,21 @@ struct OnboardingCard: View {
     private let pages: [OnboardingPage] = [
         OnboardingPage(
             eyebrow: "FIRST SESSION",
-            title: "What Bended Knee Measures",
-            body: "This app coaches how much extra bend you get from your standing posture. It is a skating posture coach, not a medical knee-angle tool.",
+            title: "What The App Coaches",
+            body: "Bended Knee watches how far your pocket and thigh tilt forward from your normal standing posture. It is a skating coach, not a medical knee-angle tool.",
             bullets: [
-                "The phone sits in either front pocket.",
-                "The number means extra bend beyond upright standing.",
-                "Quiet haptics start only when you are too upright."
+                "The live number is bend from standing.",
+                "Quiet haptics start when you come up too tall.",
+                "No session history is saved in this version."
             ],
             symbol: "figure.skating"
         ),
         OnboardingPage(
             eyebrow: "PHONE PLACEMENT",
-            title: "Set The Phone Once",
-            body: "Use the same front pocket you plan to skate with. Keep the phone top-up and the screen facing your thigh.",
+            title: "Pick One Front Pocket",
+            body: "Use the same front pocket you plan to skate with. Keep the phone top-up and the screen facing your thigh every time.",
             bullets: [
-                "Either front pocket works.",
+                "Left or right pocket both work.",
                 "Do not rotate the phone sideways.",
                 "If the phone shifts, recalibrate before skating again."
             ],
@@ -66,22 +72,24 @@ struct OnboardingCard: View {
         OnboardingPage(
             eyebrow: "CALIBRATE",
             title: "Stand Still For Three Seconds",
-            body: "Tap calibrate while standing upright. The app waits three seconds and locks your standing baseline only if the pocket signal is steady enough.",
+            body: "Tap calibrate while standing upright. The app waits three seconds, checks for a steady signal, and then locks your standing baseline.",
             bullets: [
                 "Target = extra bend beyond standing.",
-                "Start the session only after calibration locks.",
-                "Keep the app open during skating so tracking stays active."
+                "Start only after the baseline locks.",
+                "If calibration is noisy, the app asks you to try again.",
+                "Do not background the app while skating."
             ],
             symbol: "timer"
         ),
         OnboardingPage(
             eyebrow: "SESSION RULES",
             title: "What Happens While You Skate",
-            body: "If you rise too upright, the haptics get more urgent. If the phone leaves your pocket, haptics pause and resume when the phone returns.",
+            body: "Keep the app open. If you rise too upright, haptics get more urgent. If the phone leaves your pocket, coaching pauses until it goes back in.",
             bullets: [
-                "Large live number = bend from standing.",
-                "No history is stored in this version.",
-                "Use setup review anytime before a session."
+                "Below Target means bend more.",
+                "On Target means hold that depth.",
+                "Phone Removed means coaching is paused.",
+                "Feel a sample pulse in Setup before you skate."
             ],
             symbol: "waveform.path.ecg"
         )
@@ -92,10 +100,16 @@ struct OnboardingCard: View {
             HStack {
                 Text("\(pageIndex + 1) / \(pages.count)")
                     .font(AppType.label(12, weight: .bold))
-                    .foregroundStyle(AppTheme.mutedInk)
+                    .foregroundStyle(AppTheme.ink)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 7)
-                    .background(Capsule().fill(Color.white.opacity(0.65)))
+                    .background(Capsule().fill(Color.white.opacity(0.78)))
+
+                Spacer()
+
+                Text(pageIndex == pages.count - 1 ? "Next: setup" : "Swipe or tap next")
+                    .font(AppType.label(13, weight: .bold))
+                    .foregroundStyle(AppTheme.inkMuted)
             }
 
             TabView(selection: $pageIndex) {
@@ -120,7 +134,7 @@ struct OnboardingCard: View {
 
                                 Text(page.body)
                                     .font(AppType.label(16, weight: .medium))
-                                    .foregroundStyle(AppTheme.mutedInk)
+                                    .foregroundStyle(AppTheme.inkMuted)
                             }
                         }
 
@@ -143,7 +157,7 @@ struct OnboardingCard: View {
                     .padding(.top, 4)
                 }
             }
-            .frame(height: 330)
+            .frame(height: 312)
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .interactive))
 
@@ -154,7 +168,7 @@ struct OnboardingCard: View {
                             .font(AppType.label(16, weight: .bold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color.white.opacity(0.58))
+                            .background(Color.white.opacity(0.82))
                             .foregroundStyle(AppTheme.ink)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
@@ -172,7 +186,7 @@ struct OnboardingCard: View {
                         .font(AppType.label(16, weight: .bold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(pageIndex == pages.count - 1 ? AppTheme.slate : AppTheme.accent)
+                        .background(pageIndex == pages.count - 1 ? AppTheme.deepForest : AppTheme.accent)
                         .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
@@ -185,7 +199,7 @@ struct OnboardingCard: View {
                 .fill(AppTheme.panelStrong)
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(AppTheme.line.opacity(0.8), lineWidth: 1)
+                        .stroke(AppTheme.line, lineWidth: 1)
                 )
         )
         .shadow(color: Color.black.opacity(0.08), radius: 24, x: 0, y: 10)

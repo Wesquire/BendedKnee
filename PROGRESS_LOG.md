@@ -5,100 +5,88 @@
 ### Phase 0 - Discovery and Alignment
 
 - Read [`the_rules.md`](/Users/wesquire/Github/Bended%20Knee/the_rules.md) and adopted its constraints.
-- Verified workspace contents. Current repo contains only `the_rules.md`; there is no existing Xcode project or source tree.
-- Spawned four subagents for parallel review:
-  - UX/UI
-  - Full Stack
-  - Layman
-  - Orchestrator
-- Consolidated the shared conclusion:
-  - A single iPhone in a front pocket can estimate thigh orientation change from a standing baseline.
-  - A single iPhone in a front pocket cannot directly measure true anatomical knee joint angle.
-- Selected provisional technical recommendation:
-  - SwiftUI app
-  - `CoreMotion` for motion/orientation
-  - `CoreHaptics` for graded low-noise haptics
-  - 3-second standing calibration delay
-  - baseline-relative bend proxy target
-
-### Phase 0 - Resolution
-
-- Runtime expectation resolved using best technical judgment:
-  - The shipped architecture is foreground-active during sessions with `UIApplication.shared.isIdleTimerDisabled = true`.
-  - The app does not promise reliable locked-and-suspended continuous motion plus haptics on iPhone-only `iOS 17`.
-
-### Verification Performed
-
-- Verified repo state locally.
-- Verified agent findings and consolidated their recommendations.
-- Recorded user decisions:
-  - Use the thigh-angle proxy approach.
-  - Support both left and right front pockets.
-  - Assume fixed orientation: top-up, screen facing thigh.
-  - Require live numeric angle.
-  - Use haptics only.
-  - Do not save session history.
-  - Accept `0` to `60` degrees as the target input range.
-  - Require automatic haptic stop/pause when the phone is removed from the pocket.
-  - Target `iOS 17`.
-- Verified the remaining blocker against Apple guidance:
-  - Apple’s `iOS Background Execution Limits` guidance says iOS suspends apps shortly after they move to the background and there is no general-purpose mechanism for running code continuously in the background.
-  - Apple’s `CHHapticEngine.StoppedReason` includes `applicationSuspended`, which confirms the haptic engine stops when the app is suspended.
+- Verified the repo state and confirmed the app would be built in Swift for iOS.
+- Consolidated the technical truth:
+  - a single iPhone in a front pocket can estimate a thigh-angle proxy from gravity
+  - it cannot directly measure true anatomical knee-joint angle
+- Locked the approved product choices:
+  - thigh-angle proxy approach
+  - both front pockets supported
+  - top-up, screen-facing-thigh placement
+  - live numeric angle
+  - haptics only
+  - no history
+  - target range `0...60`
+  - `iOS 17`
 
 ### Phase 1-3 - Architecture, Scaffolding, and Core App Build
 
-- Created the XcodeGen spec and generated the Xcode project.
-- Built the SwiftUI app structure with app, domain, services, features, and test targets.
+- Created the XcodeGen spec and generated `BendedKnee.xcodeproj`
+- Built the SwiftUI app structure with app, domain, services, features, and test targets
 - Implemented:
   - onboarding
   - calibration countdown and baseline capture
   - bend-angle proxy estimator
   - haptic zone mapping and haptic service
-  - session screen
-  - settings for pocket side and target angle
-  - proximity-based pocket removal pause
-  - automatic session resume when the phone returns to the pocket
-- Added a technical explainer doc for the angle math and workflow.
+  - setup, session, and error states
+  - pocket-removal pause and auto-resume
+- Added the angle workflow explainer
 
-### Phase 4-7 - Validation and Fixes
+### Phase 4-7 - Repo Recovery, Refinement, and Validation
 
-- Fixed duplicate-source conflicts from pre-existing repo files by narrowing target source inclusion in `project.yml`.
-- Fixed simulator build issues caused by asset compilation in the sandbox by removing nonessential asset catalog usage from the target.
-- Fixed main-actor isolation issues in app factory and haptics mocks.
-- Fixed calibration test timing and fallback behavior.
-- Reworked the UI-test motion stub so calibration no longer destabilizes XCTest idling.
-- Added a regression test for automatic resume after pocket return.
-- Ran targeted and full test iterations until everything passed.
-- Encountered a transient CoreSimulator launch failure:
-  - `Mach error -308 (ipc/mig server died)`
-  - restarted `CoreSimulatorService`
-  - reran the full suite successfully
+- Reconstructed the missing `BendedKnee/` source tree after it disappeared from disk
+- Regenerated the Xcode project and restored buildability
+- Moved onboarding into a full-screen first-run flow
+- Simplified setup hierarchy before calibration
+- Refined session-state presentation and session controls
+- Added deterministic preview/test harness modes for:
+  - noisy calibration
+  - unavailable motion
+  - automatic pocket removal
+- Added coverage for:
+  - stale pre-calibration sample rejection
+  - target clamping
+  - onboarding reopening
+  - paused-pocket state
+  - interrupted recalibration recovery
+  - initial out-of-pocket startup handling
+  - pocket-side revalidation
+- Fixed a brittle UI onboarding helper by making it state-driven and by waiting for the start-session button to become enabled before tapping
 
-### Final Verified State
+### Phase 8-9 - Multi-Agent Debugging And Final Validation
 
-- Generic iOS build succeeded:
-  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination generic/platform=iOS -derivedDataPath /tmp/BendedKneeDerived build CODE_SIGNING_ALLOWED=NO`
-- Full simulator test suite succeeded:
-  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeDerived test`
-- Latest full test result:
-  - `61` unit tests passed
-  - `2` UI tests passed
+- Completed the required three-pass debugger-agent review.
+- Pass 1 fixes:
+  - stopped pausing live work on transient `.inactive`
+  - preserved the previous baseline when recalibration is interrupted by `stopSession()`
+- Pass 2 fix:
+  - removed duplicate app-level scene-phase handling that still paused on `.inactive`
+- Pass 3 fixes:
+  - honored an initial out-of-pocket proximity reading when a session starts
+  - kept `placementInvalid` active until pocket-side changes are revalidated by motion
+- Updated brittle UI assertions so the UI suite validates user-visible behavior instead of flaky accessibility-selection details.
 
-### Remaining Work
+### Final Validation Actually Run
 
-- Real-device validation of motion behavior in a real front pocket
-- Real-device validation of haptic subtlety while skating
-- Any refinement from layman review after device testing
+- `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeDerivedPass3 build-for-testing`
+- `xcrun simctl install B0062079-F40F-4D87-B505-1B4AE90B5E13 /tmp/BendedKneeDerivedPass3/Build/Products/Debug-iphonesimulator/BendedKnee.app`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDerivedPass3/Build/Products/BendedKnee_unit_only.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests/SessionViewModelTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDerivedPass3/Build/Products/BendedKnee_unit_only.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13'`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDerivedPass3/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
 
-### Continuation Phase 1 - Review And Sequencing
+### Final Verified Results
 
-- Re-reviewed the current root docs:
-  - `ANGLE_WORKFLOW.md`
-  - `BUILD_PLAN.md`
-  - `ORCHESTRATOR_REPORT.md`
-  - `PROGRESS_LOG.md`
-  - `TEST_STRATEGY.md`
-  - `the_rules.md`
-- Re-inspected the current SwiftUI implementation and automated tests to identify the next realistic build/debug/refinement work.
-- Created a new sequenced execution plan in `CONTINUATION_PLAN.md`.
-- Created a dedicated evidence checklist for the remaining refinement/debug/validation work in `tests/PHASE_5_REFINEMENT_DEBUG_VALIDATION.md`.
+- Focused `SessionViewModelTests`:
+  - `27` tests passed
+  - `0` failures
+- Full unit suite:
+  - `87` tests passed
+  - `0` failures
+- Full UI suite:
+  - `10` tests passed
+  - `0` failures
+
+### Honest Remaining Risk
+
+- Real-device validation still has not been performed in this environment.
+- Combined all-tests one-shot execution is still intermittently unstable on this machine because of `CoreSimulator` / Xcode runner interruptions, even though the final split full unit and full UI suites are green.

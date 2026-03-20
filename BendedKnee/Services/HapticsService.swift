@@ -4,6 +4,7 @@ import Foundation
 protocol HapticsControlling {
     func start()
     func update(deficit: Double)
+    func playSamplePulse()
     func stopAll()
 }
 
@@ -39,6 +40,10 @@ final class HapticsService: HapticsControlling {
         }
     }
 
+    func playSamplePulse() {
+        playSamplePulse(intensity: 0.24, sharpness: 0.10)
+    }
+
     func stopAll() {
         pulseTimer?.invalidate()
         pulseTimer = nil
@@ -47,14 +52,18 @@ final class HapticsService: HapticsControlling {
     }
 
     private func playPulse(for zone: HapticZone) {
+        playSamplePulse(intensity: zone.intensity, sharpness: zone.sharpness)
+    }
+
+    private func playSamplePulse(intensity: Float, sharpness: Float) {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
         start()
 
-        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: zone.intensity)
-        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: zone.sharpness)
+        let intensityParameter = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
+        let sharpnessParameter = CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
         let event = CHHapticEvent(
             eventType: .hapticTransient,
-            parameters: [intensity, sharpness],
+            parameters: [intensityParameter, sharpnessParameter],
             relativeTime: 0
         )
 
@@ -72,5 +81,6 @@ final class HapticsService: HapticsControlling {
 final class NoOpHapticsService: HapticsControlling {
     func start() {}
     func update(deficit: Double) {}
+    func playSamplePulse() {}
     func stopAll() {}
 }

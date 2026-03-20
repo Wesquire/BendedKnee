@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @ObservedObject var viewModel: SessionViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -16,7 +17,17 @@ struct RootView: View {
             }
         }
         .task {
-            viewModel.start()
+            if scenePhase == .active {
+                viewModel.start()
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                viewModel.start()
+            }
+            if newPhase == .background {
+                viewModel.handleAppMovedOutOfForeground()
+            }
         }
     }
 }

@@ -6,12 +6,13 @@ enum AppFactory {
         let arguments = ProcessInfo.processInfo.arguments
         let uiTesting = arguments.contains("UITESTING")
         let fastCalibration = arguments.contains("FAST_CALIBRATION")
+        let noisyCalibration = arguments.contains("NOISY_CALIBRATION")
         let motionService: MotionServiceProtocol = {
             guard uiTesting else { return DeviceMotionService() }
             if arguments.contains("UNAVAILABLE_MOTION") {
                 return PreviewMotionService(mode: .unavailable)
             }
-            if arguments.contains("NOISY_CALIBRATION") {
+            if noisyCalibration {
                 return PreviewMotionService(mode: .noisyCalibration)
             }
             return PreviewMotionService(mode: .steadySkate)
@@ -19,7 +20,7 @@ enum AppFactory {
         let proximityService: ProximityMonitoring = {
             guard uiTesting else { return ProximityService() }
             if arguments.contains("AUTO_REMOVE_PROXIMITY") {
-                return PreviewProximityService(mode: .autoRemove(after: 0.8))
+                return PreviewProximityService(mode: .autoRemove(after: 0.6))
             }
             return PreviewProximityService(mode: .steadyNear)
         }()
@@ -35,9 +36,10 @@ enum AppFactory {
             motionService: motionService,
             proximityService: proximityService,
             hapticsService: hapticsService,
-            calibrationTickNanoseconds: fastCalibration ? 50_000_000 : 1_000_000_000,
-            minimumCalibrationSamples: fastCalibration ? 1 : 8,
-            maximumCalibrationSpreadDegrees: fastCalibration ? 5 : 2.25,
+            calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 50_000_000 : 1_000_000_000),
+            minimumCalibrationSamples: noisyCalibration ? 3 : (fastCalibration ? 1 : 8),
+            maximumCalibrationSpreadDegrees: noisyCalibration ? 1 : (fastCalibration ? 5 : 2.25),
+            testingAutoPauseAfterNanoseconds: arguments.contains("AUTO_REMOVE_PROXIMITY") ? 800_000_000 : nil,
             defaults: defaults
         )
     }

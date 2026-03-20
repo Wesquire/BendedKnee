@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -28,6 +28,7 @@
 		C34B24F2C0F9548048F377A1 /* HapticZoneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3102C89502264EB5F886923B /* HapticZoneTests.swift */; };
 		C4C793B4A779D7E727E99533 /* AngleCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358384830068289A9BC984FE /* AngleCalculatorTests.swift */; };
 		C9C7B2F12A0D4F1915B9FE0B /* CalibrationAccumulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D08F16A47B0D38CBDEA0898 /* CalibrationAccumulator.swift */; };
+		DAB0A6DA7FB5DD3A732366FA /* PocketSide.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA5F8251487C321581754F /* PocketSide.swift */; };
 		DBECC65A4AB8826745A1773E /* ExponentialSmoother.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052542135AAFB9DBF91D3FB9 /* ExponentialSmoother.swift */; };
 		E220CA835FA01F29AAF94F7C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18346453ED0DB25DD9A611F /* HomeView.swift */; };
 		E28A7AED5FFDC75D58E61905 /* SettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D193FA852D5762BF2F4892A /* SettingsCard.swift */; };
@@ -60,7 +61,7 @@
 		3102C89502264EB5F886923B /* HapticZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticZoneTests.swift; sourceTree = "<group>"; };
 		32870E265A510188EAF024A3 /* BendAngleEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimator.swift; sourceTree = "<group>"; };
 		358384830068289A9BC984FE /* AngleCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AngleCalculatorTests.swift; sourceTree = "<group>"; };
-		3CDB7050F744E1A74FAAC520 /* BendedKnee.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BendedKnee.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CDB7050F744E1A74FAAC520 /* BendedKnee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BendedKnee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43119D2BE8224E8E90E25BA9 /* BendedKneeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendedKneeUITests.swift; sourceTree = "<group>"; };
 		4B7EB568666F4F0C53741A2F /* BendedKneeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BendedKneeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CC095C7AAF9B83C1819771C /* BendAngleEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimatorTests.swift; sourceTree = "<group>"; };
@@ -70,6 +71,7 @@
 		72DBD04D8E7E9C82212EB733 /* SessionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStateTests.swift; sourceTree = "<group>"; };
 		7D08F16A47B0D38CBDEA0898 /* CalibrationAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationAccumulator.swift; sourceTree = "<group>"; };
 		7D193FA852D5762BF2F4892A /* SettingsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCard.swift; sourceTree = "<group>"; };
+		A4AA5F8251487C321581754F /* PocketSide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketSide.swift; sourceTree = "<group>"; };
 		A9C2AAB411230A397E755C17 /* BendedKneeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BendedKneeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD0DB1DC26441A8A8A96748A /* HapticZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticZone.swift; sourceTree = "<group>"; };
 		B543F05898E6673A3516D399 /* MotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionService.swift; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 			children = (
 				245F2A5792CFCD4F0F33339B /* AppSettings.swift */,
 				AD0DB1DC26441A8A8A96748A /* HapticZone.swift */,
+				A4AA5F8251487C321581754F /* PocketSide.swift */,
 				6E7A4459590F39B21B1E5A75 /* SessionPhase.swift */,
 			);
 			name = Models;
@@ -301,7 +304,6 @@
 			);
 			mainGroup = 653E8CF99DBABD8508111970;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -337,6 +339,7 @@
 				E220CA835FA01F29AAF94F7C /* HomeView.swift in Sources */,
 				B141668DDEF3FF88890A80CA /* MotionService.swift in Sources */,
 				68F5AAE8D9C0503F5C1CF28B /* OnboardingCard.swift in Sources */,
+				DAB0A6DA7FB5DD3A732366FA /* PocketSide.swift in Sources */,
 				AF99F3779DB96C45267352B4 /* ProximityService.swift in Sources */,
 				07A06EC49CE6DB732E35CCB2 /* RootView.swift in Sources */,
 				2E577C39FD95EB19C8D79DA1 /* SessionPhase.swift in Sources */,
@@ -537,6 +540,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XZAXF7Q3JG;
 				INFOPLIST_FILE = BendedKnee/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -596,6 +600,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XZAXF7Q3JG;
 				INFOPLIST_FILE = BendedKnee/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

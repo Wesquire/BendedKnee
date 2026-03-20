@@ -12,10 +12,10 @@ enum AppTheme {
     static let success = Color(red: 0.34, green: 0.75, blue: 0.56)
     static let warning = Color(red: 0.92, green: 0.63, blue: 0.31)
     static let danger = Color(red: 0.88, green: 0.36, blue: 0.29)
-    static let panel = Color.white.opacity(0.76)
+    static let panel = Color(red: 0.99, green: 0.97, blue: 0.94)
     static let panelStrong = Color(red: 0.97, green: 0.94, blue: 0.89)
-    static let panelSecondary = Color.white.opacity(0.72)
-    static let line = Color.white.opacity(0.50)
+    static let panelSecondary = Color(red: 0.96, green: 0.93, blue: 0.88)
+    static let line = Color.white.opacity(0.72)
     static let deepForest = Color(red: 0.13, green: 0.22, blue: 0.22)
     static let inkMuted = mutedInk
 

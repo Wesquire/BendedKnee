@@ -2,85 +2,78 @@
 
 ## Current Repo State
 
-- The repo now contains a generated iOS Swift project, app source, tests, and tracking docs.
-- The current implementation is a working SwiftUI app for iPhone on `iOS 17`.
+- The repo contains a generated Swift iOS project, app source, tests, and validation docs.
+- The app is a working SwiftUI iPhone implementation of the approved skating-coaching concept.
 
-## Agent Work Summary
+## Product Decision
 
-- UX/UI recommendation:
-  - Build a simple coaching app focused on getting low enough while skating.
-  - Keep setup light, use clear calibration language, and make the live session screen low distraction.
-- Full Stack recommendation:
-  - Use a single-phone thigh-angle proxy for `v1`.
-  - Use `CMDeviceMotion.gravity` for a baseline-relative bend proxy and `CoreHaptics` for subtle escalating feedback.
-- Layman recommendation:
-  - Keep setup extremely simple and explain exactly what is being measured.
-  - Make the app pause haptics when the phone leaves the pocket and avoid clutter or saved history.
-- Orchestrator recommendation:
-  - Finalize measurement semantics before code, then proceed through architecture, implementation, and validation with written evidence.
-
-## Final Product Decision
-
-- SwiftUI iPhone app
-- `CoreMotion`-based baseline-relative bend proxy
-- `CoreHaptics`-based escalating subtle feedback
-- 3-second calibration delay before standing baseline capture
-- Adjustable target angle
-- Foreground-active session model with auto-lock disabled during a live session
+- Single-phone front-pocket thigh-angle proxy
+- `CoreMotion` baseline-relative bend estimation
+- `CoreHaptics` subtle escalating feedback
+- 3-second calibration delay
+- Target range `0...60`
+- Foreground-active session model with auto-lock disabled during live sessions
 
 ## Critical Technical Truth
 
-- A phone in one front pocket cannot directly measure true knee joint angle by itself.
-- It can measure device/thigh orientation relative to gravity and compare it to a standing baseline.
+- The app does not measure a true knee-joint angle.
+- It measures a front-pocket device/thigh tilt proxy relative to a standing baseline.
 
 ## Implemented Architecture
 
-- App shell:
-  - `SwiftUI`
-  - `RootView` switches between setup and session states
-- Motion:
+- `RootView` gates onboarding, setup, and session views
+- Motion pipeline:
   - `CMDeviceMotion.gravity`
-  - smoothing via `ExponentialSmoother`
-  - baseline averaging via `CalibrationAccumulator`
-- Angle math:
-  - `atan2(abs(gravity.z), max(0.001, -gravity.y))`
-  - bend proxy = `currentRawAngle - baselineAngle`, clamped at zero
+  - `BendAngleEstimator`
+  - `ExponentialSmoother`
+  - `CalibrationAccumulator`
 - Session behavior:
   - 3-second calibration countdown
-  - live numeric angle
-  - target range `0...60`
-  - escalating haptic zones from deficit
-  - pocket removal pauses haptics
-  - pocket return resumes automatically
+  - live numeric bend display
+  - deficit-driven haptic zones
+  - proximity-driven pocket-removal pause
+  - automatic resume when the phone returns
 - Persistence:
   - target angle
   - pocket side
   - onboarding dismissal
 
-## User Decisions Recorded
+## Validation Status
 
-- `v1` uses the thigh-angle proxy approach.
-- The phone must support both left and right front pockets.
-- Orientation is fixed: top-up and screen facing the thigh.
-- The session screen should show a live numeric angle.
-- Feedback should be haptics only.
-- Session history should not be stored.
-- Target platform can be `iOS 17`.
-- Runtime expectation is resolved to a technically honest foreground-active model.
+- Latest simulator build-for-testing: passed on `/tmp/BendedKneeDerivedPass3`
+- Focused `SessionViewModelTests`: passed (`27` / `27`)
+- Full unit suite: passed (`87` / `87`)
+- Full UI suite: passed (`10` / `10`)
 
-## Verification Status
+## Debugger Review Outcome
 
-- Local build: passed
-- Full simulator test suite: passed
-- Current automated coverage:
-  - angle math
-  - haptic zone mapping
-  - session state models
-  - session calibration and proximity flows
-  - core UI onboarding/calibration flow
+- Pass 1 findings:
+  - `.inactive` should not pause live work
+  - interrupted recalibration should preserve the previous baseline
+- Pass 2 finding:
+  - duplicate app-level scene-phase handling still paused on `.inactive`
+- Pass 3 findings:
+  - initial out-of-pocket proximity state was ignored at session start
+  - switching pocket side cleared placement validity before revalidation
+- All three debugger passes were completed and their findings were addressed in code and tests.
 
-## Remaining Gaps
+## Coverage Confirmed
 
-- Real-device validation has not been performed in this environment.
-- Calibration invalidation while the user moves during calibration is not yet a dedicated failure state.
-- Fine-tuning haptic subtlety for real skating conditions still requires device iteration.
+- angle math
+- calibration averaging and stability gates
+- haptic zone logic
+- session state transitions
+- pocket-side persistence and selection
+- interrupted recalibration recovery
+- initial out-of-pocket startup handling
+- unavailable-motion flow
+- calibration failure flow
+- onboarding flow
+- paused pocket-removal flow
+- core setup/session UI flow
+
+## Honest Remaining Gaps
+
+- Real-device validation has not been completed in this environment.
+- Fine-tuning haptic subtlety for actual skating still requires hardware testing.
+- Combined one-shot all-tests execution is still vulnerable to `CoreSimulator` / Xcode runner instability on this machine, despite green final split suites.
