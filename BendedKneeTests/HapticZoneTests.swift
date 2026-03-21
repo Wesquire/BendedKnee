@@ -17,12 +17,12 @@ final class HapticZoneTests: XCTestCase {
         XCTAssertEqual(HapticZone.zone(for: 0.3), .none)
     }
 
-    func testZone_justBelowHalf_returnsNone() {
-        XCTAssertEqual(HapticZone.zone(for: 0.49), .none)
+    func testZone_justBelowThreshold_returnsNone() {
+        XCTAssertEqual(HapticZone.zone(for: 0.99), .none)
     }
 
-    func testZone_halfDegree_returnsGentle() {
-        XCTAssertEqual(HapticZone.zone(for: 0.5), .gentle)
+    func testZone_atThreshold_returnsGentle() {
+        XCTAssertEqual(HapticZone.zone(for: 1.0), .gentle)
     }
 
     func testZone_twoDeficit_returnsGentle() {

@@ -18,6 +18,7 @@ final class SessionViewModel: ObservableObject {
     private let motionService: MotionServiceProtocol
     private let proximityService: ProximityMonitoring
     private let hapticsService: HapticsControlling
+    private let pulseToneService: PulseToneControlling
     private let estimator = BendAngleEstimator()
     private let calibrationPrepSeconds: Int
     private let calibrationCaptureSeconds: Int
@@ -39,11 +40,14 @@ final class SessionViewModel: ObservableObject {
     private var hasAttemptedSessionStart = false
     private var calibrationValidSampleCount = 0
     private var calibrationInvalidSampleCount = 0
+    private var toneTimer: Timer?
+    private var currentToneZone: HapticZone = .none
 
     init(
         motionService: MotionServiceProtocol,
         proximityService: ProximityMonitoring,
         hapticsService: HapticsControlling,
+        pulseToneService: PulseToneControlling = NoOpPulseToneService(),
         calibrationPrepSeconds: Int = 1,
         calibrationCaptureSeconds: Int = 3,
         calibrationTickNanoseconds: UInt64 = 1_000_000_000,
@@ -55,6 +59,7 @@ final class SessionViewModel: ObservableObject {
         self.motionService = motionService
         self.proximityService = proximityService
         self.hapticsService = hapticsService
+        self.pulseToneService = pulseToneService
         self.calibrationPrepSeconds = calibrationPrepSeconds
         self.calibrationCaptureSeconds = calibrationCaptureSeconds
         self.calibrationTickNanoseconds = calibrationTickNanoseconds
@@ -64,8 +69,10 @@ final class SessionViewModel: ObservableObject {
         self.defaults = defaults
         let storedTarget = defaults.object(forKey: Keys.targetAngle) as? Double ?? 20
         let storedPocketSide = PocketSide(rawValue: defaults.string(forKey: Keys.pocketSide) ?? "") ?? .right
+        let storedVolume = defaults.object(forKey: Keys.pulseVolume) as? Double ?? 0.6
+        let storedAudioEnabled = defaults.object(forKey: Keys.pulseAudioEnabled) as? Bool ?? true
         let shouldShowOnboarding = !defaults.bool(forKey: Keys.onboardingDismissed)
-        self.settings = AppSettings(pocketSide: storedPocketSide, targetAngle: storedTarget)
+        self.settings = AppSettings(pocketSide: storedPocketSide, targetAngle: storedTarget, pulseVolume: storedVolume, pulseAudioEnabled: storedAudioEnabled)
         self.showOnboarding = shouldShowOnboarding
         self.sessionPhase = shouldShowOnboarding ? .onboarding : .idle
     }
@@ -117,6 +124,25 @@ final class SessionViewModel: ObservableObject {
             )
         }
         refreshStatusAndHaptics()
+    }
+
+    func setPulseVolume(_ volume: Double) {
+        let clamped = min(max(volume, AppSettings.volumeRange.lowerBound), AppSettings.volumeRange.upperBound)
+        settings.pulseVolume = clamped
+        defaults.set(settings.pulseVolume, forKey: Keys.pulseVolume)
+    }
+
+    func setPulseAudioEnabled(_ enabled: Bool) {
+        settings.pulseAudioEnabled = enabled
+        defaults.set(enabled, forKey: Keys.pulseAudioEnabled)
+        if !enabled {
+            pulseToneService.stop()
+        }
+    }
+
+    func playTestTone() {
+        let volume = settings.pulseAudioEnabled ? Float(settings.pulseVolume) : 0
+        pulseToneService.playTestTone(volume: volume)
     }
 
     func beginCalibration() {
@@ -285,6 +311,7 @@ final class SessionViewModel: ObservableObject {
         UIApplication.shared.isIdleTimerDisabled = false
         proximityService.stop()
         hapticsService.stopAll()
+        stopTonePulse()
     }
 
     var targetAngleText: String {
@@ -538,6 +565,7 @@ final class SessionViewModel: ObservableObject {
         guard case .running = sessionPhase else {
             if sessionPhase != .pausedPocketRemoved {
                 hapticsService.stopAll()
+                stopTonePulse()
             }
             if baselineAngle != nil, sessionPhase == .ready, calibrationFeedbackStyle == .neutral {
                 statusText = "Baseline locked. Start when ready."
@@ -547,12 +575,14 @@ final class SessionViewModel: ObservableObject {
 
         guard !placementInvalid else {
             hapticsService.stopAll()
+            stopTonePulse()
             statusText = "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh."
             return
         }
 
         guard pocketPresent else {
             hapticsService.stopAll()
+            stopTonePulse()
             return
         }
 
@@ -560,6 +590,34 @@ final class SessionViewModel: ObservableObject {
         let zone = HapticZone.zone(for: deficit)
         statusText = zone.label
         hapticsService.update(deficit: deficit)
+        updateTonePulse(zone: zone)
+    }
+
+    private func updateTonePulse(zone: HapticZone) {
+        guard zone != currentToneZone else { return }
+        currentToneZone = zone
+        toneTimer?.invalidate()
+        toneTimer = nil
+
+        guard zone != .none, settings.pulseAudioEnabled, settings.pulseVolume > 0 else { return }
+
+        let volume = Float(settings.pulseVolume)
+        pulseToneService.playPulseTone(zone: zone, volume: volume)
+        let timer = Timer(timeInterval: zone.interval, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            if self.settings.pulseAudioEnabled && self.settings.pulseVolume > 0 {
+                self.pulseToneService.playPulseTone(zone: zone, volume: Float(self.settings.pulseVolume))
+            }
+        }
+        toneTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func stopTonePulse() {
+        toneTimer?.invalidate()
+        toneTimer = nil
+        currentToneZone = .none
+        pulseToneService.stop()
     }
 
     private func restoreCalibrationBackup() {
@@ -579,6 +637,8 @@ private extension SessionViewModel {
         static let onboardingDismissed = "onboardingDismissed"
         static let targetAngle = "targetAngle"
         static let pocketSide = "pocketSide"
+        static let pulseVolume = "pulseVolume"
+        static let pulseAudioEnabled = "pulseAudioEnabled"
     }
 }
 

@@ -23,6 +23,7 @@
 		8987FB4F014F48D1D89A1030 /* HapticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72631AA34D3A597381BE72F6 /* HapticsService.swift */; };
 		8D6CC58BF6987BA59C4C681E /* SessionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DBD04D8E7E9C82212EB733 /* SessionStateTests.swift */; };
 		99A6B94146B353EEF1FDA461 /* HapticZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0DB1DC26441A8A8A96748A /* HapticZone.swift */; };
+		9E05357D3DF427F3706E6216 /* PulseToneService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54435DE5978734DF0F7AC5 /* PulseToneService.swift */; };
 		AE26D33E3ABC95E814F23312 /* BendAngleEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32870E265A510188EAF024A3 /* BendAngleEstimator.swift */; };
 		AF99F3779DB96C45267352B4 /* ProximityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AE68E2D62F37CBBAFF9D28 /* ProximityService.swift */; };
 		B141668DDEF3FF88890A80CA /* MotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B543F05898E6673A3516D399 /* MotionService.swift */; };
@@ -77,6 +78,7 @@
 		7D08F16A47B0D38CBDEA0898 /* CalibrationAccumulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationAccumulator.swift; sourceTree = "<group>"; };
 		7D193FA852D5762BF2F4892A /* SettingsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCard.swift; sourceTree = "<group>"; };
 		7D4FEF1DB7FD2A30514AE5E2 /* BendedKneeBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendedKneeBrandMark.swift; sourceTree = "<group>"; };
+		7F54435DE5978734DF0F7AC5 /* PulseToneService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulseToneService.swift; sourceTree = "<group>"; };
 		A4AA5F8251487C321581754F /* PocketSide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketSide.swift; sourceTree = "<group>"; };
 		A70FEBD610C6FE4CF06AD038 /* LaunchExperienceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchExperienceView.swift; sourceTree = "<group>"; };
 		A9C2AAB411230A397E755C17 /* BendedKneeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BendedKneeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -213,6 +215,7 @@
 				72631AA34D3A597381BE72F6 /* HapticsService.swift */,
 				B543F05898E6673A3516D399 /* MotionService.swift */,
 				C8AE68E2D62F37CBBAFF9D28 /* ProximityService.swift */,
+				7F54435DE5978734DF0F7AC5 /* PulseToneService.swift */,
 			);
 			name = Services;
 			path = BendedKnee/Services;
@@ -356,6 +359,7 @@
 				68F5AAE8D9C0503F5C1CF28B /* OnboardingCard.swift in Sources */,
 				DAB0A6DA7FB5DD3A732366FA /* PocketSide.swift in Sources */,
 				AF99F3779DB96C45267352B4 /* ProximityService.swift in Sources */,
+				9E05357D3DF427F3706E6216 /* PulseToneService.swift in Sources */,
 				07A06EC49CE6DB732E35CCB2 /* RootView.swift in Sources */,
 				2E577C39FD95EB19C8D79DA1 /* SessionPhase.swift in Sources */,
 				4E8DF463BAB507DFEDD4E0D6 /* SessionView.swift in Sources */,

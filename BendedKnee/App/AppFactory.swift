@@ -25,6 +25,7 @@ enum AppFactory {
             return PreviewProximityService(mode: .steadyNear)
         }()
         let hapticsService: HapticsControlling = uiTesting ? NoOpHapticsService() : HapticsService()
+        let pulseToneService: PulseToneControlling = uiTesting ? NoOpPulseToneService() : PulseToneService()
         let defaults: UserDefaults = {
             guard uiTesting else { return .standard }
             let suiteName = "DropUITests"
@@ -36,6 +37,7 @@ enum AppFactory {
             motionService: motionService,
             proximityService: proximityService,
             hapticsService: hapticsService,
+            pulseToneService: pulseToneService,
             calibrationPrepSeconds: fastCalibration ? 1 : 7,
             calibrationCaptureSeconds: fastCalibration ? 2 : 6,
             calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 200_000_000 : 1_000_000_000),
