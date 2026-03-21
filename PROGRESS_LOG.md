@@ -2,6 +2,27 @@
 
 ## 2026-03-20
 
+### Phase 10 - Layout, Onboarding, Calibration, And Retro Refresh Start
+
+- Re-read [`the_rules.md`](/Users/wesquire/Github/Bended%20Knee/the_rules.md) before beginning the new refinement pass.
+- Consolidated the new user-reported issues into a single coordinated effort:
+  - tall-device layout scaling
+  - onboarding clarity and first-run behavior
+  - setup information architecture
+  - sample haptic behavior
+  - calibration trust and pacing
+  - stronger retro warm rink-poster styling
+- Locked the additional product decisions:
+  - explicit `4s` prep countdown before calibration capture
+  - separate calibration capture phase
+  - total calibration flow not longer than `10s`
+  - one haptic when calibration capture begins
+  - two haptics on success
+  - three haptics on failure
+  - warm retro rink-poster color direction
+- Created the new phased master plan in [`FINAL_LAYOUT_CALIBRATION_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_LAYOUT_CALIBRATION_PLAN.md).
+- Created a new evidence checklist for this effort in [`PHASE_10_LAYOUT_CALIBRATION_RETRO.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_10_LAYOUT_CALIBRATION_RETRO.md).
+
 ### Phase 0 - Discovery and Alignment
 
 - Read [`the_rules.md`](/Users/wesquire/Github/Bended%20Knee/the_rules.md) and adopted its constraints.
@@ -182,3 +203,78 @@
 - Full UI suite:
   - `11` tests passed
   - `0` failures
+
+### Phase 8 - Local Fallback Passes 2 And 3 Closure
+
+- Continued the required debugger protocol locally because new worker spawning remained blocked by the platform `agent thread limit reached (max 6)` cap.
+- Re-reviewed the full codebase for passes 2 and 3 rather than skipping them.
+- Hardened the haptics runtime path:
+  - engine restart now verifies success before assuming pulses can continue
+  - the pulse timer now runs in common run-loop modes
+- Iteratively stabilized the UI harness in [`BendedKneeUITests.swift`](/Users/wesquire/Github/Bended%20Knee/BendedKneeUITests/BendedKneeUITests.swift):
+  - switched onboarding controls to direct taps
+  - kept scrolled setup controls on coordinate taps with scroll retries
+  - promoted `startSessionButton` and `reopenOnboardingButton` back to direct taps so XCTest can auto-scroll them into view
+  - replaced the pocket-side copy assertion with a direct selected-state assertion
+
+### Phase 8 Final Validation Actually Run
+
+- `xcodebuild -project /Users/wesquire/Github/Bended\ Knee/BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeDebuggerFinal build-for-testing`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebuggerFinal/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebuggerFinal/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests/BendedKneeUITests/testCalibrationEnablesSessionStart -only-testing:BendedKneeUITests/BendedKneeUITests/testCalibrationFailureShowsHelpfulMessage`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebuggerFinal/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests/BendedKneeUITests/testSessionShowsStopControlAfterStart -only-testing:BendedKneeUITests/BendedKneeUITests/testPocketRemovalShowsPausedState -only-testing:BendedKneeUITests/BendedKneeUITests/testSetupGuideCanBeReopenedFromSettings`
+- `xcodebuild test-without-building -xctestrun /tmp/BendedKneeDebuggerFinal/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
+
+### Phase 8 Final Validation Results
+
+- Full unit suite:
+  - `97` tests passed
+  - `0` failures
+- Full UI suite:
+  - `11` tests passed
+  - `0` failures
+
+### Phase 11 - Final Polish Pass (Bug Fixes, Scaling, Retro Palette)
+
+#### Phase 1 - Bug Fixes And Onboarding
+- Fixed sample pulse button: CHHapticEngine now created on demand in `startEngineIfNeeded()`.
+- Renamed onboarding CTA from "Start Setup" to "Get Started".
+- Rebuilt onboarding layout for tall devices with scaling brand mark, vertical icon/title stack, fixedSize text, and pinned bottom buttons.
+
+#### Phase 2 - Layout And Scaling
+- HomeView: GeometryReader-relative circle offsets and safe-area scroll padding.
+- SessionView: Safe-area-aware layout, scaling angle font, ScrollView wrapper.
+- SplashView: Relative circle offsets, scaling brand mark.
+
+#### Phase 3 - 70's Retro Roller Rink Palette
+- Full AppTheme redesign: mustard gold, burnt sienna, retro teal, chocolate brown, warm cream.
+- Home gradient: cream → gold wash → teal. Session gradient: dark chocolate → umber → dark teal.
+
+#### Phase 11 Validation Results
+
+- Full unit suite: `99` tests passed, `0` failures
+- Full UI suite: `11` tests passed, `0` failures
+
+### Phase 12 - Drop Rename, Splash Restore, and Calibration Hardening
+
+#### Phase 1 - Rename and Launch
+- Renamed the shipped app identity to `Drop` in brand copy, app display name, bundle identifiers, and launch flow.
+- Restored the production splash screen so normal launches always show the branded entry experience for `2.5` seconds.
+- Preserved the internal Swift module name as `BendedKnee` so the test targets and code imports remain stable while the shipped app name is `Drop`.
+
+#### Phase 2 - Adaptive Layout
+- Tightened splash, onboarding, home, and session layouts around safe-area-aware width caps and responsive sizing for tall devices like iPhone 16 Pro.
+- Reduced oversized headline scaling and centered content within bounded columns so cards no longer overrun the screen edges.
+
+#### Phase 3 - Calibration and Haptics
+- Extended production calibration capture to `6` seconds after the `4` second prep countdown.
+- Relaxed placement tolerance and added calibration sample validity tracking so brief pocket-settling noise does not cause false failures.
+- Switched calibration and sample haptics to stronger cues with UIKit overlay support for more reliable real-iPhone feedback.
+
+#### Phase 12 Validation Results
+
+- `xcodegen generate` passed
+- `build-for-testing` passed on `/tmp/DropFixes`
+- Full unit suite: `99` tests passed, `0` failures
+- Full UI suite: `11` tests passed, `0` failures
+- Direct simulator install and launch passed: `com.drop.app`

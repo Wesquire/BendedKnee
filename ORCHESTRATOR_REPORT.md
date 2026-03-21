@@ -123,14 +123,51 @@
 
 ## Phase 8 Current State
 
-- Pass 1 is complete via local fallback because fresh worker spawning is still blocked by the platform `agent thread limit reached (max 6)` cap.
-- Confirmed pass 1 fixes:
+- Passes 1, 2, and 3 are complete via local fallback because fresh worker spawning stayed blocked by the platform `agent thread limit reached (max 6)` cap.
+- Confirmed debugger fixes:
   - first-launch splash persistence now occurs only after the splash actually completes
   - canceled splash tasks no longer consume the splash state
   - preview proximity resets between repeated starts
-- New regression coverage was added for the splash cancellation/completion edge cases and for preview proximity reset behavior.
-- Fresh post-pass validation is green on `/tmp/BendedKneeDebugPass1`:
+  - haptics engine restart only marks the engine active after a real restart succeeds
+  - the repeating pulse timer now runs in common run-loop modes
+  - the UI harness was stabilized so onboarding controls use direct taps while scrolled setup controls use coordinate taps and scroll retries
+  - `startSessionButton` and `reopenOnboardingButton` now use direct taps in the UI harness so XCTest can auto-scroll them into view reliably
+- New regression coverage and validation work were added for the launch, proximity, and UI-harness edge cases.
+- Fresh post-debug validation is green on `/tmp/BendedKneeDebuggerFinal`:
   - `build-for-testing` passed
   - full unit suite `97 / 97`
   - full UI suite `11 / 11`
-- Passes 2 and 3 are still outstanding. The current blocker is tooling capacity, not a known repo/test failure.
+
+## Phase 10 Active Orchestration
+
+- A new coordinated pass has started for layout correctness, onboarding truthfulness, setup cleanup, calibration trust, and retro visual refinement.
+- Work is intentionally sequenced in this order:
+  - launch/onboarding/layout foundation
+  - setup information architecture
+  - calibration redesign
+  - retro theme and spacing polish
+  - full fresh validation
+- The governing implementation tracker for this pass is [`FINAL_LAYOUT_CALIBRATION_PLAN.md`](/Users/wesquire/Github/Bended%20Knee/FINAL_LAYOUT_CALIBRATION_PLAN.md).
+- The phase evidence file for this pass is [`PHASE_10_LAYOUT_CALIBRATION_RETRO.md`](/Users/wesquire/Github/Bended%20Knee/tests/PHASE_10_LAYOUT_CALIBRATION_RETRO.md).
+
+## Phase 12 Active Orchestration
+
+- A focused correction pass was run for four reported regressions:
+  - non-adaptive layout on tall phones
+  - missing splash screen
+  - unreliable calibration and calibration haptics
+  - incomplete rename from `Bended Knee` to `Drop`
+- The implementation sequence for this pass was:
+  - restore truthful shipped branding and launch behavior
+  - fix project configuration fallout from the shipped-name rename
+  - harden splash, onboarding, home, and session layouts for iPhone 16 Pro dimensions
+  - relax calibration fragility and strengthen haptic cues
+  - rerun build, unit, UI, and direct launch validation
+- Important orchestration note:
+  - the shipped product is now `Drop`, bundle id `com.drop.app`, display name `Drop`
+  - the internal Swift module remains `BendedKnee` intentionally so test imports and code boundaries stay stable
+- Final validation for this pass is green on `/tmp/DropFixes`:
+  - `build-for-testing` passed
+  - full unit suite `99 / 99`
+  - full UI suite `11 / 11`
+  - simulator install and launch passed for `com.drop.app`

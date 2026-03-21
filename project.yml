@@ -23,7 +23,9 @@ targets:
       path: BendedKnee/Resources/Info.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.bendedknee.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.drop.app
+        PRODUCT_NAME: Drop
+        PRODUCT_MODULE_NAME: BendedKnee
         SWIFT_VERSION: 5.0
         TARGETED_DEVICE_FAMILY: 1
         CODE_SIGN_STYLE: Automatic
@@ -43,9 +45,11 @@ targets:
       - target: BendedKnee
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.bendedknee.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.drop.tests
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: 5.0
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Drop.app/Drop
+        BUNDLE_LOADER: $(TEST_HOST)
   BendedKneeUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -56,7 +60,7 @@ targets:
       - target: BendedKnee
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.bendedknee.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.drop.uitests
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: 5.0
         TEST_TARGET_NAME: BendedKnee

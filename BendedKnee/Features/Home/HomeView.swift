@@ -2,36 +2,40 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: SessionViewModel
+    @State private var showingSkatingSetup = false
 
     var body: some View {
-        ZStack {
-            AppTheme.homeBackground.ignoresSafeArea()
+        GeometryReader { geometry in
+            let contentWidth = min(geometry.size.width - 24, 640)
 
-            Circle()
-                .fill(AppTheme.accentSoft.opacity(0.18))
-                .frame(width: 230, height: 230)
-                .blur(radius: 14)
-                .offset(x: 138, y: -286)
+            ZStack {
+                AppTheme.homeBackground.ignoresSafeArea()
 
-            Circle()
-                .fill(AppTheme.mist.opacity(0.30))
-                .frame(width: 200, height: 200)
-                .blur(radius: 16)
-                .offset(x: -132, y: 308)
+                Circle()
+                    .fill(AppTheme.accentSoft.opacity(0.18))
+                    .frame(width: geometry.size.width * 0.55, height: geometry.size.width * 0.55)
+                    .blur(radius: 14)
+                    .offset(x: geometry.size.width * 0.35, y: -geometry.size.height * 0.32)
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 22) {
-                    if viewModel.baselineAngle == nil {
+                Circle()
+                    .fill(AppTheme.mist.opacity(0.30))
+                    .frame(width: geometry.size.width * 0.48, height: geometry.size.width * 0.48)
+                    .blur(radius: 16)
+                    .offset(x: -geometry.size.width * 0.32, y: geometry.size.height * 0.34)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 20) {
                         heroCard
-                        SettingsCard(viewModel: viewModel)
-                        calibrationCard
-                    } else {
-                        heroCard
+                        setupGuideCard
                         calibrationCard
                         SettingsCard(viewModel: viewModel)
                     }
+                    .frame(maxWidth: contentWidth)
+                    .padding(.horizontal, 12)
+                    .padding(.top, max(geometry.safeAreaInsets.top, 12) + 8)
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 16) + 8)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(20)
             }
         }
     }
@@ -47,19 +51,6 @@ struct HomeView: View {
                 .font(AppType.label(16, weight: .semibold))
                 .foregroundStyle(viewModel.baselineAngle == nil ? AppTheme.ink : AppTheme.inkMuted)
 
-            HStack(spacing: 14) {
-                setupMetric(
-                    title: "Pocket",
-                    value: viewModel.settings.pocketSide.rawValue,
-                    emphasis: AppTheme.deepForest
-                )
-                setupMetric(
-                    title: "Target",
-                    value: viewModel.targetAngleText,
-                    emphasis: AppTheme.accent
-                )
-            }
-
             if let baselineAngle = viewModel.baselineAngle {
                 Text("Your live number tracks extra bend beyond standing.")
                     .font(AppType.label(14, weight: .semibold))
@@ -71,7 +62,8 @@ struct HomeView: View {
                             .font(AppType.label(14, weight: .bold))
                             .foregroundStyle(AppTheme.inkMuted)
                         Text(viewModel.currentAngleText)
-                            .font(AppType.display(72))
+                            .font(AppType.display(64))
+                            .minimumScaleFactor(0.55)
                             .foregroundStyle(AppTheme.ink)
                             .accessibilityIdentifier("currentAngleText")
                     }
@@ -84,6 +76,7 @@ struct HomeView: View {
                             .foregroundStyle(AppTheme.inkMuted)
                         Text(viewModel.targetAngleText)
                             .font(AppType.display(32))
+                            .minimumScaleFactor(0.7)
                             .foregroundStyle(AppTheme.accent)
                     }
                 }
@@ -92,7 +85,7 @@ struct HomeView: View {
                     .font(AppType.label(14, weight: .medium))
                     .foregroundStyle(AppTheme.inkMuted)
             } else {
-                Text("1. Choose \(viewModel.settings.pocketSide.rawValue.lowercased()) pocket. 2. Set \(viewModel.targetAngleText) target. 3. Calibrate upright. 4. Keep the app open while you skate.")
+                Text("Fine-tune your pocket side and target, then run an upright calibration before you skate.")
                     .font(AppType.label(14, weight: .medium))
                     .foregroundStyle(AppTheme.inkMuted)
             }
@@ -121,21 +114,87 @@ struct HomeView: View {
         .shadow(color: AppTheme.deepForest.opacity(0.08), radius: 26, x: 0, y: 12)
     }
 
+    private var setupGuideCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Button(action: {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
+                    showingSkatingSetup.toggle()
+                }
+            }) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Skating Setup")
+                            .font(AppType.title(22))
+                            .foregroundStyle(AppTheme.ink)
+
+                        Text("Placement rules and the exact setup order.")
+                            .font(AppType.label(13, weight: .semibold))
+                            .foregroundStyle(AppTheme.inkMuted)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: showingSkatingSetup ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(AppTheme.accent)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("skatingSetupDisclosure")
+
+            if showingSkatingSetup {
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Placement")
+                            .font(AppType.label(13, weight: .bold))
+                            .foregroundStyle(AppTheme.inkMuted)
+
+                        Label("Use your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket every time.", systemImage: "figure.walk")
+                        Label("Keep the phone top-up.", systemImage: "arrow.up")
+                        Label("Keep the screen facing your thigh.", systemImage: "iphone")
+                        Label("Keep the app open and in the foreground while skating.", systemImage: "lock.open")
+                    }
+                    .font(AppType.label(14, weight: .medium))
+                    .foregroundStyle(AppTheme.ink)
+
+                    Divider()
+                        .overlay(AppTheme.line)
+
+                    Text("Setup order: choose pocket side, choose target bend, calibrate upright, then start your session.")
+                        .font(AppType.label(14, weight: .semibold))
+                        .foregroundStyle(AppTheme.deepForest)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding(22)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AppTheme.panelSecondary)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(AppTheme.line, lineWidth: 1)
+                )
+        )
+        .shadow(color: AppTheme.deepForest.opacity(0.06), radius: 18, x: 0, y: 10)
+    }
+
     private var calibrationCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(viewModel.setupStepTitle)
                 .font(AppType.title(24))
                 .foregroundStyle(AppTheme.ink)
 
-            Text("This is the main setup step. Stand upright with the phone settled in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket, then stay still for the full countdown.")
+            Text("Tap calibrate, place the phone in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket during the 4-second prep countdown, then stand upright and still for the capture.")
                 .font(AppType.label(15, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
-            Text("If the pocket moves too much, calibration will fail and you can try again immediately. When you skate, the app must stay open and in the foreground.")
+            Text("Calibration uses a 4-second prep countdown and a longer capture window so the phone can settle before the standing baseline is locked.")
                 .font(AppType.label(13, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
-            if viewModel.placementInvalid {
+            if viewModel.shouldShowPlacementWarning {
                 Label("Phone placement looks off. Keep it top-up with the screen against your thigh before you continue.", systemImage: "exclamationmark.triangle.fill")
                     .font(AppType.label(13, weight: .bold))
                     .foregroundStyle(AppTheme.danger)
@@ -147,10 +206,26 @@ struct HomeView: View {
                     )
             }
 
+            VStack(alignment: .leading, spacing: 8) {
+                Text(viewModel.calibrationBannerTitle)
+                    .font(AppType.label(14, weight: .bold))
+                    .foregroundStyle(AppTheme.ink)
+
+                Text(viewModel.calibrationBannerDetail)
+                    .font(AppType.label(13, weight: .medium))
+                    .foregroundStyle(AppTheme.inkMuted)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(calibrationBannerBackground)
+            )
+
             if case .calibrating(let secondsRemaining) = viewModel.sessionPhase {
                 HStack(spacing: 10) {
-                    Image(systemName: "dot.radiowaves.left.and.right")
-                    Text("Calibrating: \(secondsRemaining)")
+                    Image(systemName: viewModel.calibrationStage == .preparing ? "timer" : "dot.radiowaves.left.and.right")
+                    Text(viewModel.calibrationStage == .preparing ? "Get Ready: \(secondsRemaining)" : "Calibrating: \(secondsRemaining)")
                 }
                 .font(.system(size: 17, weight: .heavy, design: .rounded))
                 .foregroundStyle(AppTheme.accent)
@@ -217,27 +292,25 @@ struct HomeView: View {
         statusColor.opacity(0.14)
     }
 
+    private var calibrationBannerBackground: Color {
+        switch viewModel.calibrationFeedbackStyle {
+        case .success:
+            return AppTheme.success.opacity(0.14)
+        case .failure:
+            return AppTheme.danger.opacity(0.12)
+        case .capturing:
+            return AppTheme.accent.opacity(0.14)
+        case .preparing:
+            return AppTheme.warning.opacity(0.14)
+        case .neutral:
+            return Color.white.opacity(0.66)
+        }
+    }
+
     private var isUnavailable: Bool {
         if case .unavailable = viewModel.sessionPhase {
             return true
         }
         return false
-    }
-
-    private func setupMetric(title: String, value: String, emphasis: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(AppType.label(12, weight: .bold))
-                .foregroundStyle(AppTheme.inkMuted)
-            Text(value)
-                .font(AppType.title(22))
-                .foregroundStyle(emphasis)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.82))
-        )
     }
 }

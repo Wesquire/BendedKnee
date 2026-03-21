@@ -16,7 +16,7 @@ final class DeviceMotionService: MotionServiceProtocol {
     private let manager = CMMotionManager()
     private let queue: OperationQueue = {
         let queue = OperationQueue()
-        queue.name = "BendedKnee.DeviceMotion"
+        queue.name = "Drop.DeviceMotion"
         queue.qualityOfService = .userInteractive
         return queue
     }()
@@ -50,7 +50,7 @@ final class PreviewMotionService: MotionServiceProtocol {
     }
 
     private let mode: Mode
-    private let queue = DispatchQueue(label: "BendedKnee.PreviewMotion")
+    private let queue = DispatchQueue(label: "Drop.PreviewMotion")
     private var timer: DispatchSourceTimer?
     private var tick: Double = 0
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct BendedKneeApp: App {
+struct DropApp: App {
     @StateObject private var viewModel: SessionViewModel
     private let launchConfiguration: AppLaunchConfiguration
 

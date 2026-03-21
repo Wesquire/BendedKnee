@@ -461,7 +461,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.drop.uitests;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -480,7 +480,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.drop.uitests;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -564,7 +564,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.drop.app;
+				PRODUCT_MODULE_NAME = BendedKnee;
+				PRODUCT_NAME = Drop;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -582,11 +584,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.drop.tests;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BendedKnee.app/BendedKnee";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Drop.app/Drop";
 			};
 			name = Debug;
 		};
@@ -601,11 +603,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.drop.tests;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BendedKnee.app/BendedKnee";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Drop.app/Drop";
 			};
 			name = Release;
 		};
@@ -623,7 +625,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bendedknee.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.drop.app;
+				PRODUCT_MODULE_NAME = BendedKnee;
+				PRODUCT_NAME = Drop;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;

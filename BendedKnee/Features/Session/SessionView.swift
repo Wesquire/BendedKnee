@@ -4,71 +4,82 @@ struct SessionView: View {
     @ObservedObject var viewModel: SessionViewModel
 
     var body: some View {
-        ZStack {
-            AppTheme.sessionBackground.ignoresSafeArea()
+        GeometryReader { geometry in
+            let angleFontSize: CGFloat = min(104, geometry.size.width * 0.24)
+            let contentWidth = min(geometry.size.width - 24, 560)
 
-            VStack(spacing: 22) {
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("Bended Knee")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.white.opacity(0.70))
+            ZStack {
+                AppTheme.sessionBackground.ignoresSafeArea()
 
-                        Spacer()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 18) {
+                        VStack(spacing: 10) {
+                            HStack {
+                                Text(AppBrand.name)
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.white.opacity(0.70))
+
+                                Spacer()
+                            }
+
+                            stateBadge
+
+                            Text(viewModel.currentAngleText)
+                                .font(.system(size: angleFontSize, weight: .black, design: .rounded))
+                                .foregroundStyle(angleColor)
+                                .monospacedDigit()
+                                .minimumScaleFactor(0.55)
+                                .opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.18 : 1)
+                                .accessibilityIdentifier("sessionAngleText")
+
+                            Text("Target \(viewModel.targetAngleText)")
+                                .font(.system(size: 26, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.24 : 0.75))
+                        }
+
+                        progressPanel
+
+                        if viewModel.sessionPhase == .pausedPocketRemoved {
+                            pausedBanner
+                        }
+
+                        Text(viewModel.primarySessionTitle)
+                            .font(.system(size: 24, weight: .heavy, design: .rounded))
+                            .foregroundStyle(viewModel.sessionPhase == .pausedPocketRemoved ? .white : angleColor)
+                            .accessibilityIdentifier("sessionStatusText")
+
+                        Text(viewModel.primarySessionDetail)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.92 : 0.78))
+                            .padding(.horizontal, 18)
+
+                        Text("Need a new target? End the session and change it in setup before skating again.")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color.white.opacity(0.62))
+                            .padding(.horizontal, 24)
+
+                        Button(action: viewModel.stopSession) {
+                            Text("End Session")
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.white.opacity(0.14))
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+                        .accessibilityIdentifier("endSessionButton")
+
+                        Spacer(minLength: 12)
                     }
-
-                    stateBadge
-
-                    Text(viewModel.currentAngleText)
-                        .font(.system(size: 110, weight: .black, design: .rounded))
-                        .foregroundStyle(angleColor)
-                        .monospacedDigit()
-                        .opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.18 : 1)
-                        .accessibilityIdentifier("sessionAngleText")
-
-                    Text("Target \(viewModel.targetAngleText)")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.24 : 0.75))
+                    .frame(maxWidth: contentWidth)
+                    .padding(.horizontal, 12)
+                    .padding(.top, max(geometry.safeAreaInsets.top, 12) + 12)
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 16) + 8)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(.top, 44)
-
-                progressPanel
-
-                if viewModel.sessionPhase == .pausedPocketRemoved {
-                    pausedBanner
-                }
-
-                Text(viewModel.primarySessionTitle)
-                    .font(.system(size: 24, weight: .heavy, design: .rounded))
-                    .foregroundStyle(viewModel.sessionPhase == .pausedPocketRemoved ? .white : angleColor)
-                    .accessibilityIdentifier("sessionStatusText")
-
-                Text(viewModel.primarySessionDetail)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.92 : 0.78))
-                    .padding(.horizontal, 18)
-
-                Text("Need a new target? End the session and change it in setup before skating again.")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.white.opacity(0.62))
-                    .padding(.horizontal, 24)
-
-                Button(action: viewModel.stopSession) {
-                    Text("End Session")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color.white.opacity(0.14))
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                }
-                .accessibilityIdentifier("endSessionButton")
-
-                Spacer(minLength: 12)
             }
-            .padding(24)
         }
     }
 

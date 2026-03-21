@@ -34,53 +34,63 @@ struct LaunchExperienceView: View {
 
 struct SplashView: View {
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    AppTheme.paper,
-                    AppTheme.sand,
-                    AppTheme.mist.opacity(0.92)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        GeometryReader { geometry in
+            let contentWidth = min(geometry.size.width - 32, 460)
+            let brandIconSize = min(max(geometry.size.width * 0.28, 110), 154)
+            let titleSize = min(max(geometry.size.width * 0.10, 32), 48)
 
-            Circle()
-                .fill(AppTheme.accentSoft.opacity(0.22))
-                .frame(width: 320, height: 320)
-                .blur(radius: 18)
-                .offset(x: 120, y: -260)
-
-            Circle()
-                .fill(AppTheme.mist.opacity(0.30))
-                .frame(width: 260, height: 260)
-                .blur(radius: 24)
-                .offset(x: -140, y: 280)
-
-            VStack(spacing: 28) {
-                Spacer()
-
-                BendedKneeBrandMark(
-                    iconSize: 136,
-                    titleSize: 42,
-                    subtitle: "Skate lower. Feel it sooner."
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        AppTheme.paper,
+                        AppTheme.sand,
+                        AppTheme.mist.opacity(0.92)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
+                .ignoresSafeArea()
 
-                Text("Pocket coach for deeper knee bend")
-                    .font(AppType.label(16, weight: .bold))
-                    .foregroundStyle(AppTheme.inkMuted)
-                    .accessibilityIdentifier("splashTagline")
+                Circle()
+                    .fill(AppTheme.accentSoft.opacity(0.22))
+                    .frame(width: geometry.size.width * 0.75, height: geometry.size.width * 0.75)
+                    .blur(radius: 18)
+                    .offset(x: geometry.size.width * 0.28, y: -geometry.size.height * 0.28)
 
-                Text("Set your pocket. Lock your baseline. Keep the app open while you skate.")
-                    .font(AppType.label(13, weight: .semibold))
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(AppTheme.inkMuted.opacity(0.88))
-                    .padding(.horizontal, 18)
+                Circle()
+                    .fill(AppTheme.mist.opacity(0.30))
+                    .frame(width: geometry.size.width * 0.62, height: geometry.size.width * 0.62)
+                    .blur(radius: 24)
+                    .offset(x: -geometry.size.width * 0.34, y: geometry.size.height * 0.30)
 
-                Spacer()
+                VStack(spacing: max(20, geometry.size.height * 0.026)) {
+                    Spacer()
+
+                    DropBrandMark(
+                        iconSize: brandIconSize,
+                        titleSize: titleSize,
+                        subtitle: AppBrand.tagline
+                    )
+
+                    Text("Pocket coach for deeper knee bend")
+                        .font(AppType.label(16, weight: .bold))
+                        .foregroundStyle(AppTheme.inkMuted)
+                        .accessibilityIdentifier("splashTagline")
+
+                    Text("Set your pocket. Lock your baseline. Keep the app open while you skate.")
+                        .font(AppType.label(13, weight: .semibold))
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(AppTheme.inkMuted.opacity(0.88))
+                        .frame(maxWidth: contentWidth - 24)
+
+                    Spacer()
+                }
+                .frame(maxWidth: contentWidth)
+                .padding(.horizontal, 16)
+                .padding(.top, geometry.safeAreaInsets.top + 8)
+                .padding(.bottom, geometry.safeAreaInsets.bottom + 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .padding(.horizontal, 28)
         }
         .accessibilityIdentifier("splashView")
     }

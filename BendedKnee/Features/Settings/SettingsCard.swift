@@ -2,11 +2,6 @@ import SwiftUI
 
 struct SettingsCard: View {
     @ObservedObject var viewModel: SessionViewModel
-    @State private var showingSupportTools = false
-
-    private var shouldShowSupportToolsInline: Bool {
-        viewModel.baselineAngle == nil
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -64,41 +59,9 @@ struct SettingsCard: View {
                 Text("0° to 60° of extra bend beyond standing.")
                     .font(AppType.label(12, weight: .medium))
                     .foregroundStyle(AppTheme.inkMuted)
-
-                Text(viewModel.setupTargetExampleText)
-                    .font(AppType.label(12, weight: .semibold))
-                    .foregroundStyle(AppTheme.deepForest)
             }
 
-            if shouldShowSupportToolsInline {
-                supportToolsContent
-            } else {
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showingSupportTools.toggle()
-                    }
-                }) {
-                    HStack {
-                        Text("Pulse Preview & Setup Guide")
-                            .font(AppType.label(14, weight: .bold))
-                            .foregroundStyle(AppTheme.ink)
-
-                        Spacer()
-
-                        Text(showingSupportTools ? "Hide" : "Show")
-                            .font(AppType.label(12, weight: .bold))
-                            .foregroundStyle(AppTheme.inkMuted)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("supportToolsDisclosure")
-
-                if showingSupportTools {
-                    supportToolsContent
-                        .padding(.top, 12)
-                }
-            }
+            supportToolsContent
         }
         .padding(22)
         .background(
@@ -131,30 +94,6 @@ struct SettingsCard: View {
                 .buttonStyle(PrimaryFilledButtonStyle())
                 .accessibilityIdentifier("samplePulseButton")
             }
-
-            Button(action: viewModel.reopenOnboarding) {
-                Text("Review Setup Guide")
-                    .font(AppType.label(15, weight: .bold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.white.opacity(0.82))
-                    .foregroundStyle(AppTheme.ink)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            }
-            .accessibilityIdentifier("reopenOnboardingButton")
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Placement Rules")
-                    .font(AppType.label(13, weight: .bold))
-                    .foregroundStyle(AppTheme.inkMuted)
-
-                Label("Keep the phone in your selected front pocket.", systemImage: "figure.walk")
-                Label("Keep the phone top-up.", systemImage: "arrow.up")
-                Label("Keep the screen facing your thigh.", systemImage: "iphone")
-                Label("Keep the app open and in the foreground while skating.", systemImage: "lock.open")
-            }
-            .font(AppType.label(14, weight: .medium))
-            .foregroundStyle(AppTheme.ink)
         }
     }
 }

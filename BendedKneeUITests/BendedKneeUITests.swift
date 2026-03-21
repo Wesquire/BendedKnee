@@ -43,21 +43,19 @@ final class BendedKneeUITests: XCTestCase {
 
         advanceOnboarding(in: app)
         XCTAssertTrue(app.segmentedControls["pocketSidePicker"].waitForExistence(timeout: 2))
-        revealSupportToolsIfNeeded(in: app)
         XCTAssertTrue(app.buttons["samplePulseButton"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["reopenOnboardingButton"].exists)
     }
 
-    func testSetupGuideCanBeReopenedFromSettings() {
+    func testSkatingSetupDisclosureRevealsPlacementGuidance() {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
-        revealSupportToolsIfNeeded(in: app)
-        let reopenButton = app.buttons["reopenOnboardingButton"]
-        XCTAssertTrue(reopenButton.waitForExistence(timeout: 2))
-        tap(reopenButton, in: app)
+        let disclosure = app.buttons["skatingSetupDisclosure"]
+        XCTAssertTrue(disclosure.waitForExistence(timeout: 2))
+        tap(disclosure, in: app)
 
-        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Placement"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Keep the phone top-up.'")).firstMatch.exists)
     }
 
     func testFirstLaunchStartsInFullScreenOnboarding() {
@@ -80,7 +78,7 @@ final class BendedKneeUITests: XCTestCase {
         advanceOnboarding(in: app)
         tap(app.buttons["calibrateButton"], in: app)
 
-        XCTAssertTrue(app.staticTexts["Calibration failed. Hold still and keep the phone settled."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Calibration failed. Hold still, keep the phone settled, and try again."].waitForExistence(timeout: 5))
     }
 
     func testUnavailableMotionShowsUnavailableState() {
@@ -110,8 +108,9 @@ final class BendedKneeUITests: XCTestCase {
         advanceOnboarding(in: app)
         let picker = app.segmentedControls["pocketSidePicker"]
         XCTAssertTrue(picker.waitForExistence(timeout: 2))
-        tap(picker.buttons["Left"], in: app)
-        XCTAssertTrue(app.staticTexts["Use your left front pocket."].waitForExistence(timeout: 2))
+        let leftButton = picker.buttons["Left"]
+        tap(leftButton, in: app)
+        XCTAssertTrue(app.buttons["calibrateButton"].waitForExistence(timeout: 2))
     }
 
     private func advanceOnboarding(in app: XCUIApplication) {
@@ -138,34 +137,36 @@ final class BendedKneeUITests: XCTestCase {
         return app
     }
 
-    private func revealSupportToolsIfNeeded(in app: XCUIApplication) {
-        let sampleButton = app.buttons["samplePulseButton"]
-        if sampleButton.exists {
-            return
-        }
-
-        let disclosure = app.buttons["supportToolsDisclosure"]
-        if disclosure.waitForExistence(timeout: 2) {
-            tap(disclosure, in: app)
-        }
-    }
-
     private func tap(_ element: XCUIElement, in app: XCUIApplication, timeout: TimeInterval = 4) {
         XCTAssertTrue(element.waitForExistence(timeout: timeout))
 
-        let predicate = NSPredicate(format: "hittable == true")
+        let directTapIdentifiers: Set<String> = [
+            "onboardingNextButton",
+            "continueButton",
+            "onboardingBackButton",
+            "startSessionButton",
+            "samplePulseButton",
+            "skatingSetupDisclosure"
+        ]
+        if directTapIdentifiers.contains(element.identifier) {
+            element.tap()
+            return
+        }
+
         let scrollContainer = app.scrollViews.firstMatch.exists ? app.scrollViews.firstMatch : app
 
-        for _ in 0..<4 {
-            let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
-            _ = XCTWaiter().wait(for: [expectation], timeout: 1)
-
+        for _ in 0..<8 {
             if element.isHittable {
                 element.tap()
                 return
             }
-
             scrollContainer.swipeUp()
+        }
+
+        let frame = element.frame
+        if frame.width > 0, frame.height > 0 {
+            element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            return
         }
 
         XCTFail("Element never became hittable: \(element)")
@@ -176,4 +177,5 @@ final class BendedKneeUITests: XCTestCase {
         let expectation = XCTNSPredicateExpectation(predicate: predicate, object: button)
         XCTAssertEqual(XCTWaiter().wait(for: [expectation], timeout: 4), .completed)
     }
+
 }

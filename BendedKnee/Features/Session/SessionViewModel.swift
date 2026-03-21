@@ -12,11 +12,15 @@ final class SessionViewModel: ObservableObject {
     @Published private(set) var statusText: String = "Stand still to calibrate."
     @Published private(set) var placementInvalid = false
     @Published var showOnboarding: Bool
+    @Published private(set) var calibrationStage: CalibrationStage?
+    @Published private(set) var calibrationFeedbackStyle: CalibrationFeedbackStyle = .neutral
 
     private let motionService: MotionServiceProtocol
     private let proximityService: ProximityMonitoring
     private let hapticsService: HapticsControlling
     private let estimator = BendAngleEstimator()
+    private let calibrationPrepSeconds: Int
+    private let calibrationCaptureSeconds: Int
     private let calibrationTickNanoseconds: UInt64
     private let minimumCalibrationSamples: Int
     private let maximumCalibrationSpreadDegrees: Double
@@ -32,11 +36,16 @@ final class SessionViewModel: ObservableObject {
     private var calibrationBaselineBackup: Double?
     private var calibrationRunID = 0
     private var latestMotionSnapshot: MotionSnapshot?
+    private var hasAttemptedSessionStart = false
+    private var calibrationValidSampleCount = 0
+    private var calibrationInvalidSampleCount = 0
 
     init(
         motionService: MotionServiceProtocol,
         proximityService: ProximityMonitoring,
         hapticsService: HapticsControlling,
+        calibrationPrepSeconds: Int = 1,
+        calibrationCaptureSeconds: Int = 3,
         calibrationTickNanoseconds: UInt64 = 1_000_000_000,
         minimumCalibrationSamples: Int = 8,
         maximumCalibrationSpreadDegrees: Double = 2.25,
@@ -46,6 +55,8 @@ final class SessionViewModel: ObservableObject {
         self.motionService = motionService
         self.proximityService = proximityService
         self.hapticsService = hapticsService
+        self.calibrationPrepSeconds = calibrationPrepSeconds
+        self.calibrationCaptureSeconds = calibrationCaptureSeconds
         self.calibrationTickNanoseconds = calibrationTickNanoseconds
         self.minimumCalibrationSamples = minimumCalibrationSamples
         self.maximumCalibrationSpreadDegrees = maximumCalibrationSpreadDegrees
@@ -82,12 +93,11 @@ final class SessionViewModel: ObservableObject {
         }
     }
 
-    func reopenOnboarding() {
-        showOnboarding = true
-    }
-
     func playHapticSample() {
+        hapticsService.start()
         hapticsService.playSamplePulse()
+        calibrationFeedbackStyle = .neutral
+        statusText = "Sample pulse sent. If you do not feel it, make sure you are testing on a real iPhone."
     }
 
     func setTargetAngle(_ angle: Double) {
@@ -115,24 +125,29 @@ final class SessionViewModel: ObservableObject {
             return
         }
 
+        hasAttemptedSessionStart = false
         calibrationTask?.cancel()
         calibrationRunID += 1
         let runID = calibrationRunID
         hapticsService.stopAll()
         calibrationAccumulator.reset()
-        smoother.reset()
+        calibrationValidSampleCount = 0
+        calibrationInvalidSampleCount = 0
         placementInvalid = false
         calibrationBaselineBackup = baselineAngle
-        baselineAngle = nil
         currentAngle = 0
-        sessionPhase = .calibrating(secondsRemaining: 3)
-        statusText = "Hold still. We need a steady standing baseline."
+        calibrationStage = .preparing
+        calibrationFeedbackStyle = .preparing
+        sessionPhase = .calibrating(secondsRemaining: calibrationPrepSeconds)
+        statusText = "Get ready. Put the phone in your front pocket before capture begins."
 
         calibrationTask = Task { [weak self] in
             guard let self else { return }
-            for remaining in stride(from: 3, through: 1, by: -1) {
+            for remaining in stride(from: calibrationPrepSeconds, through: 1, by: -1) {
                 guard runID == calibrationRunID else { return }
+                calibrationStage = .preparing
                 sessionPhase = .calibrating(secondsRemaining: remaining)
+                statusText = "Get ready. Put the phone in your front pocket. Capture starts in \(remaining)s."
                 do {
                     try await Task.sleep(nanoseconds: calibrationTickNanoseconds)
                     try Task.checkCancellation()
@@ -145,27 +160,74 @@ final class SessionViewModel: ObservableObject {
 
             guard runID == calibrationRunID else { return }
 
+            calibrationStage = .capturing
+            calibrationFeedbackStyle = .capturing
+            calibrationAccumulator.reset()
+            calibrationValidSampleCount = 0
+            calibrationInvalidSampleCount = 0
+            smoother.reset()
+            currentAngle = 0
+            placementInvalid = false
+            statusText = "Calibration started. Stand upright and stay still."
+            hapticsService.playCalibrationStartCue()
+
+            for remaining in stride(from: calibrationCaptureSeconds, through: 1, by: -1) {
+                guard runID == calibrationRunID else { return }
+                calibrationStage = .capturing
+                sessionPhase = .calibrating(secondsRemaining: remaining)
+                statusText = "Calibrating now. Stay upright and still. \(remaining)s remaining."
+                do {
+                    try await Task.sleep(nanoseconds: calibrationTickNanoseconds)
+                    try Task.checkCancellation()
+                } catch {
+                    guard runID == calibrationRunID else { return }
+                    restoreCalibrationBackup()
+                    return
+                }
+            }
+
+            guard runID == calibrationRunID else { return }
+            calibrationStage = nil
+
+            let calibrationPlacementFailed =
+                calibrationValidSampleCount < minimumCalibrationSamples ||
+                calibrationInvalidSampleCount > max(6, calibrationValidSampleCount / 2)
+
+            if placementInvalid || calibrationPlacementFailed {
+                baselineAngle = calibrationBaselineBackup
+                sessionPhase = calibrationBaselineBackup == nil ? .idle : .ready
+                statusText = "Calibration failed. Put the phone in your front pocket, let it settle, and try again."
+                calibrationFeedbackStyle = .failure
+                calibrationBaselineBackup = nil
+                hapticsService.playCalibrationFailureCue()
+                return
+            }
+
             if calibrationAccumulator.isStable(
                 minimumSamples: minimumCalibrationSamples,
                 maximumSpread: maximumCalibrationSpreadDegrees
             ), let baseline = calibrationAccumulator.average {
                 baselineAngle = baseline
                 calibrationBaselineBackup = nil
+                hasAttemptedSessionStart = false
                 sessionPhase = .ready
-                statusText = "Baseline locked. Start when ready."
+                statusText = "Calibration complete. Baseline locked. You can take the phone out and start when ready."
+                calibrationFeedbackStyle = .success
+                hapticsService.playCalibrationSuccessCue()
                 refreshStatusAndHaptics()
             } else {
                 baselineAngle = calibrationBaselineBackup
                 sessionPhase = calibrationBaselineBackup == nil ? .idle : .ready
-                statusText = calibrationBaselineBackup == nil
-                    ? "Calibration failed. Hold still and keep the phone settled."
-                    : "Calibration failed. Previous baseline kept."
+                statusText = "Calibration failed. Hold still, keep the phone settled, and try again."
+                calibrationFeedbackStyle = .failure
                 calibrationBaselineBackup = nil
+                hapticsService.playCalibrationFailureCue()
             }
         }
     }
 
     func startSession() {
+        hasAttemptedSessionStart = true
         guard sessionPhase == .ready, baselineAngle != nil else {
             statusText = "Finish calibration before starting."
             return
@@ -220,6 +282,8 @@ final class SessionViewModel: ObservableObject {
         if case .calibrating = sessionPhase {
             restoreCalibrationBackup()
         }
+        calibrationStage = nil
+        hasAttemptedSessionStart = false
         sessionPhase = baselineAngle == nil ? .idle : .ready
         statusText = baselineAngle == nil ? "Stand still to calibrate." : "Session stopped."
         UIApplication.shared.isIdleTimerDisabled = false
@@ -317,31 +381,24 @@ final class SessionViewModel: ObservableObject {
 
     var setupSummaryTitle: String {
         if baselineAngle != nil {
-            return "Setup Locked In"
+            return "Skating Setup"
         }
         return "Skating Setup"
     }
 
     var setupSummaryDetail: String {
         if baselineAngle != nil {
-            return "Baseline ready. Keep using your \(settings.pocketSide.rawValue.lowercased()) front pocket and start when you are ready to roll."
+            return "Baseline ready. Fine-tune pocket side or target below any time before you start skating."
         }
-        return "Set your pocket and bend goal first, then calibrate upright before you skate."
+        return "Open this guide for placement rules, then fine-tune your pocket side and target below."
     }
 
     var setupStepTitle: String {
-        switch sessionPhase {
-        case .calibrating:
-            return "3. Calibrating Upright"
-        case .ready:
-            return "4. Start Session"
-        default:
-            return "3. Calibrate Upright"
-        }
+        "Calibrate Upright"
     }
 
     var guidanceText: String {
-        if placementInvalid {
+        if shouldShowPlacementWarning {
             return "Phone placement looks off. Keep it top-up with the screen toward your thigh before you calibrate or skate."
         }
         switch sessionPhase {
@@ -352,7 +409,14 @@ final class SessionViewModel: ObservableObject {
         case .ready:
             return "Calibration complete. Your target is extra bend beyond your natural standing posture."
         case .calibrating(let secondsRemaining):
-            return "Stand upright and still for a steady reading. \(secondsRemaining)s remaining."
+            switch calibrationStage {
+            case .preparing:
+                return "Put the phone in your front pocket during the countdown. Capture starts in \(secondsRemaining)s."
+            case .capturing:
+                return "Stand upright and hold still. \(secondsRemaining)s remaining."
+            case .none:
+                return "Calibration is preparing."
+            }
         case .unavailable(let message):
             return message
         case .onboarding, .idle:
@@ -365,7 +429,7 @@ final class SessionViewModel: ObservableObject {
     }
 
     var startSessionHelperText: String {
-        if placementInvalid {
+        if shouldShowPlacementWarning {
             return "Fix phone placement before starting. Keep it top-up with the screen against your thigh."
         }
         if baselineAngle == nil {
@@ -374,15 +438,73 @@ final class SessionViewModel: ObservableObject {
         return "Keep the app open and in the foreground while you skate. Locking or leaving the app pauses coaching."
     }
 
+    var shouldShowPlacementWarning: Bool {
+        placementInvalid && (
+            sessionPhase == .ready ||
+            calibrationStage == .capturing ||
+            sessionPhase == .running ||
+            sessionPhase == .pausedPocketRemoved ||
+            hasAttemptedSessionStart
+        )
+    }
+
+    var calibrationBannerTitle: String {
+        switch calibrationFeedbackStyle {
+        case .preparing:
+            return "Get Ready"
+        case .capturing:
+            return "Capturing Standing Baseline"
+        case .success:
+            return "Calibration Successful"
+        case .failure:
+            return "Calibration Needs Another Try"
+        case .neutral:
+            return baselineAngle == nil ? "Calibration Not Started" : "Baseline Ready"
+        }
+    }
+
+    var calibrationBannerDetail: String {
+        switch calibrationFeedbackStyle {
+        case .preparing:
+            return "You have \(calibrationPrepSeconds) seconds to place the phone in your pocket before capture begins."
+        case .capturing:
+            return "Once capture starts, stay upright and quiet until the countdown finishes. Drop ignores brief pocket-settling noise but still needs a mostly stable capture."
+        case .success:
+            return "Baseline saved. A double pulse marks completion so you know you can look at the phone again."
+        case .failure:
+            return "If the phone was moving, upside down, or not settled in your pocket, try calibration again."
+        case .neutral:
+            return "The app compares your live bend against this upright standing baseline."
+        }
+    }
+
     private func handleMotion(_ snapshot: MotionSnapshot) {
         latestMotionSnapshot = snapshot
-        placementInvalid = !estimator.isPlacementValid(gravity: snapshot.gravity, pocketSide: settings.pocketSide)
+        if calibrationStage == .preparing {
+            placementInvalid = false
+            return
+        }
+
+        let placementLooksValid = estimator.isPlacementValid(gravity: snapshot.gravity, pocketSide: settings.pocketSide)
+        if calibrationStage == .capturing {
+            if placementLooksValid {
+                calibrationValidSampleCount += 1
+                placementInvalid = false
+            } else {
+                calibrationInvalidSampleCount += 1
+                placementInvalid = calibrationValidSampleCount == 0 || calibrationInvalidSampleCount > max(6, calibrationValidSampleCount / 2)
+                return
+            }
+        } else {
+            placementInvalid = !placementLooksValid
+        }
+
         if placementInvalid {
             currentAngle = 0
             if sessionPhase == .running {
                 hapticsService.stopAll()
             }
-            if sessionPhase != .pausedPocketRemoved {
+            if shouldShowPlacementWarning && sessionPhase != .pausedPocketRemoved {
                 statusText = "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh."
             }
             return
@@ -426,7 +548,7 @@ final class SessionViewModel: ObservableObject {
             if sessionPhase != .pausedPocketRemoved {
                 hapticsService.stopAll()
             }
-            if baselineAngle != nil, sessionPhase == .ready {
+            if baselineAngle != nil, sessionPhase == .ready, calibrationFeedbackStyle == .neutral {
                 statusText = "Baseline locked. Start when ready."
             }
             return
@@ -452,6 +574,10 @@ final class SessionViewModel: ObservableObject {
     private func restoreCalibrationBackup() {
         let restoredBaseline = calibrationBaselineBackup ?? baselineAngle
         baselineAngle = restoredBaseline
+        calibrationValidSampleCount = 0
+        calibrationInvalidSampleCount = 0
+        calibrationStage = nil
+        calibrationFeedbackStyle = .neutral
         sessionPhase = restoredBaseline == nil ? .idle : .ready
         calibrationBaselineBackup = nil
     }
@@ -463,4 +589,17 @@ private extension SessionViewModel {
         static let targetAngle = "targetAngle"
         static let pocketSide = "pocketSide"
     }
+}
+
+enum CalibrationStage: Equatable {
+    case preparing
+    case capturing
+}
+
+enum CalibrationFeedbackStyle: Equatable {
+    case neutral
+    case preparing
+    case capturing
+    case success
+    case failure
 }

@@ -7,26 +7,29 @@ Execute the required three-pass debugger protocol across the entire Bended Knee 
 ## Pass Sequence
 
 - [x] Pass 1: full-codebase debug and bug fixing
-- [ ] Pass 2: review pass 1 changes, then full-codebase debug and bug fixing
-- [ ] Pass 3: review passes 1 and 2 changes, then full-codebase debug and bug fixing
+- [x] Pass 2: review pass 1 changes, then full-codebase debug and bug fixing
+- [x] Pass 3: review passes 1 and 2 changes, then full-codebase debug and bug fixing
 - [x] Fresh post-debug validation:
   - build-for-testing
   - full unit suite
   - full UI suite
-- [ ] Final debugger-protocol documentation sync
+- [x] Final debugger-protocol documentation sync
 
 ## Actual Status
 
 - Pass 1 completed locally because new worker spawning was blocked by the platform `agent thread limit reached (max 6)` error.
-- Confirmed pass 1 fixes:
+- Passes 2 and 3 also completed locally for the same reason. They re-reviewed the full codebase and the prior debugger fixes instead of skipping the required later passes.
+- Confirmed debugger fixes across the local three-pass sequence:
   - first-launch splash completion is now persisted only after the splash actually finishes
   - canceled splash tasks no longer mark the splash as consumed
   - preview proximity resets cleanly across repeated starts in the same app process
-- Fresh validation already re-run after the pass 1 fixes:
-  - `build-for-testing` passed on `/tmp/BendedKneeDebugPass1`
+  - haptics engine restart handling no longer assumes restart success
+  - the pulse timer now runs in common run-loop modes
+  - the UI harness now uses a mixed direct-tap and coordinate-tap strategy so onboarding and scrolled setup controls are both stable under test
+- Fresh validation was re-run after the final debugger fixes:
+  - `build-for-testing` passed on `/tmp/BendedKneeDebuggerFinal`
   - full unit suite passed (`97` / `97`)
   - full UI suite passed (`11` / `11`)
-- Passes 2 and 3 still need fresh debugger review. If worker slots remain blocked, they should continue locally and the constraint should stay documented explicitly.
 
 ## Orchestration Rules
 

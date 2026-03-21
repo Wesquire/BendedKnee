@@ -27,7 +27,7 @@ enum AppFactory {
         let hapticsService: HapticsControlling = uiTesting ? NoOpHapticsService() : HapticsService()
         let defaults: UserDefaults = {
             guard uiTesting else { return .standard }
-            let suiteName = "BendedKneeUITests"
+            let suiteName = "DropUITests"
             let defaults = UserDefaults(suiteName: suiteName) ?? .standard
             defaults.removePersistentDomain(forName: suiteName)
             return defaults
@@ -36,9 +36,11 @@ enum AppFactory {
             motionService: motionService,
             proximityService: proximityService,
             hapticsService: hapticsService,
-            calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 50_000_000 : 1_000_000_000),
+            calibrationPrepSeconds: fastCalibration ? 1 : 4,
+            calibrationCaptureSeconds: fastCalibration ? 2 : 6,
+            calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 200_000_000 : 1_000_000_000),
             minimumCalibrationSamples: noisyCalibration ? 3 : (fastCalibration ? 1 : 8),
-            maximumCalibrationSpreadDegrees: noisyCalibration ? 1 : (fastCalibration ? 5 : 2.25),
+            maximumCalibrationSpreadDegrees: noisyCalibration ? 1 : (fastCalibration ? 5 : 4.5),
             testingAutoPauseAfterNanoseconds: arguments.contains("AUTO_REMOVE_PROXIMITY") ? 800_000_000 : nil,
             defaults: defaults
         )

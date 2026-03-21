@@ -80,3 +80,30 @@ This document records the validation work completed for the rebuilt and refined 
 - The app currently has a green final simulator build, a green full unit suite, and a green full UI suite on the post-refinement artifact set.
 - The required three-pass debugger-agent review is complete and its findings are addressed in code and tests.
 - The only remaining gap is real-device validation for skating conditions and haptic tuning.
+
+## Phase 12 Final Validation
+
+- Shipped app identity:
+  - display name `Drop`
+  - bundle id `com.drop.app`
+  - simulator launch verified with `com.drop.app: 78791`
+- Launch behavior:
+  - production splash restored to a `2.5` second branded entry screen
+  - UI-test splash override still works through launch arguments
+- Layout behavior:
+  - splash, onboarding, home, and session views were rebalanced around safe-area-aware width caps and responsive sizing for tall phones including iPhone 16 Pro
+- Calibration behavior:
+  - prep window remains `4` seconds
+  - capture window increased to `6` seconds
+  - placement validation is more forgiving during capture
+  - calibration now tolerates brief pocket-settling noise instead of failing immediately
+- Haptic behavior:
+  - sample pulse starts the haptics service before playing
+  - calibration start, success, and failure cues are stronger
+  - UIKit overlay fallback is used to improve real-device feel reliability
+- Validation actually run for this pass:
+  - `xcodegen generate --spec /Users/wesquire/Github/Bended Knee/project.yml`
+  - `xcodebuild ... build-for-testing` on `/tmp/DropFixes`
+  - full unit suite: `99 / 99` passed
+  - full UI suite: `11 / 11` passed
+  - direct simulator install + launch of `/tmp/DropFixes/Build/Products/Debug-iphonesimulator/Drop.app`

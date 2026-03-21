@@ -1,16 +1,21 @@
 import SwiftUI
 
-struct BendedKneeBrandMark: View {
+enum AppBrand {
+    static let name = "Drop"
+    static let tagline = "Skate lower. Feel it sooner."
+}
+
+struct DropBrandMark: View {
     var iconSize: CGFloat = 108
     var titleSize: CGFloat = 34
     var subtitle: String? = nil
 
     var body: some View {
         VStack(spacing: 18) {
-            BendedKneeIcon(size: iconSize)
+            DropIcon(size: iconSize)
 
             VStack(spacing: 6) {
-                Text("Bended Knee")
+                Text(AppBrand.name)
                     .font(.system(size: titleSize, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.ink)
 
@@ -25,7 +30,7 @@ struct BendedKneeBrandMark: View {
     }
 }
 
-struct BendedKneeIcon: View {
+struct DropIcon: View {
     var size: CGFloat = 108
 
     var body: some View {

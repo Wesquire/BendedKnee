@@ -5,27 +5,31 @@ struct OnboardingView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let horizontalPadding = min(max(geometry.size.width * 0.055, 16), 28)
+            let verticalSpacing = min(max(geometry.size.height * 0.018, 12), 20)
+
             ZStack {
                 AppTheme.homeBackground.ignoresSafeArea()
 
                 Circle()
                     .fill(AppTheme.accentSoft.opacity(0.16))
-                    .frame(width: 260, height: 260)
+                    .frame(width: min(geometry.size.width * 0.64, 280), height: min(geometry.size.width * 0.64, 280))
                     .blur(radius: 20)
                     .offset(x: 120, y: -geometry.size.height * 0.28)
 
-                VStack(alignment: .leading, spacing: 18) {
-                    BendedKneeBrandMark(
-                        iconSize: 86,
-                        titleSize: 32,
-                        subtitle: "Skate lower with a cleaner, calmer setup."
+                VStack(spacing: verticalSpacing) {
+                    DropBrandMark(
+                        iconSize: min(max(geometry.size.width * 0.18, 72), 94),
+                        titleSize: min(max(geometry.size.width * 0.08, 26), 32),
+                        subtitle: "Skate low. Stay groovy."
                     )
+                    .padding(.top, geometry.safeAreaInsets.top + 4)
 
                     OnboardingCard(dismiss: dismiss)
+                        .frame(maxHeight: .infinity)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, max(geometry.safeAreaInsets.top, 20))
-                .padding(.bottom, max(geometry.safeAreaInsets.bottom, 20))
+                .padding(.horizontal, horizontalPadding)
+                .padding(.bottom, max(geometry.safeAreaInsets.bottom, 14))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
@@ -39,7 +43,7 @@ struct OnboardingCard: View {
     private let pages: [OnboardingPage] = [
         OnboardingPage(
             eyebrow: "WHAT IT DOES",
-            title: "Bended Knee coaches depth, not medical angle.",
+            title: "Drop coaches depth, not medical angle.",
             body: "The app uses your phone in one front pocket to estimate how much extra bend you have beyond upright standing.",
             bullets: [
                 "The live number is bend from standing.",
@@ -55,14 +59,14 @@ struct OnboardingCard: View {
             bullets: [
                 "Left or right pocket both work.",
                 "If the phone shifts, recalibrate.",
-                "Setup will ask for pocket side and target."
+                "Choose your pocket side and target on the next screen."
             ],
             symbol: "iphone.gen3"
         ),
         OnboardingPage(
             eyebrow: "WHEN YOU SKATE",
             title: "Calibrate upright, then let the haptics coach you.",
-            body: "Stand still for a 3 second baseline capture. During your session, faster haptics mean you need more knee bend.",
+            body: "Stand still for a baseline capture. During your session, faster haptics mean you need more knee bend.",
             bullets: [
                 "Target means extra bend beyond standing.",
                 "If the phone leaves your pocket, coaching pauses.",
@@ -73,7 +77,8 @@ struct OnboardingCard: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Page indicator
             HStack {
                 Text("\(pageIndex + 1) / \(pages.count)")
                     .font(AppType.label(12, weight: .bold))
@@ -83,12 +88,10 @@ struct OnboardingCard: View {
                     .background(Capsule().fill(Color.white.opacity(0.78)))
 
                 Spacer()
-
-                Text(pageIndex == pages.count - 1 ? "Ready for setup" : "Next")
-                    .font(AppType.label(13, weight: .bold))
-                    .foregroundStyle(AppTheme.inkMuted)
             }
+            .padding(.bottom, 10)
 
+            // Progress dots
             HStack(spacing: 8) {
                 ForEach(Array(pages.enumerated()), id: \.offset) { index, _ in
                     Capsule()
@@ -96,65 +99,70 @@ struct OnboardingCard: View {
                         .frame(width: index == pageIndex ? 26 : 10, height: 10)
                 }
             }
+            .padding(.bottom, 16)
 
+            // Scrollable content area — takes all remaining space
             ScrollView(showsIndicators: false) {
                 let page = pages[pageIndex]
 
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 16) {
                     Text(page.eyebrow)
                         .font(AppType.label(12, weight: .bold))
                         .foregroundStyle(AppTheme.accent)
                         .tracking(1.2)
 
-                    HStack(alignment: .top, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Image(systemName: page.symbol)
-                            .font(.system(size: 30, weight: .medium))
-                            .frame(width: 58, height: 58)
+                            .font(.system(size: 28, weight: .medium))
+                            .frame(width: 52, height: 52)
                             .background(Circle().fill(AppTheme.accentSoft.opacity(0.45)))
                             .foregroundStyle(AppTheme.ink)
 
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(page.title)
-                                .font(AppType.title(26))
-                                .foregroundStyle(AppTheme.ink)
+                        Text(page.title)
+                            .font(AppType.title(24))
+                            .foregroundStyle(AppTheme.ink)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                            Text(page.body)
-                                .font(AppType.label(16, weight: .medium))
-                                .foregroundStyle(AppTheme.inkMuted)
-                        }
+                        Text(page.body)
+                            .font(AppType.label(15, weight: .medium))
+                            .foregroundStyle(AppTheme.inkMuted)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
                         ForEach(page.bullets, id: \.self) { bullet in
                             HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 15, weight: .bold))
+                                    .font(.system(size: 14, weight: .bold))
                                     .foregroundStyle(AppTheme.slate)
                                     .padding(.top, 2)
 
                                 Text(bullet)
-                                    .font(AppType.label(15, weight: .medium))
+                                    .font(AppType.label(14, weight: .medium))
                                     .foregroundStyle(AppTheme.ink)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                         }
                     }
 
                     if pageIndex == pages.count - 1 {
                         Label("Important: keep the app open and in the foreground while skating.", systemImage: "hand.raised.fill")
-                            .font(AppType.label(14, weight: .bold))
+                            .font(AppType.label(13, weight: .bold))
                             .foregroundStyle(AppTheme.danger)
-                            .padding(14)
+                            .padding(12)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
                                     .fill(AppTheme.danger.opacity(0.10))
                             )
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 6)
+                .padding(.bottom, 8)
             }
+            .frame(maxHeight: .infinity, alignment: .top)
 
+            // Navigation buttons — always pinned at bottom
             HStack(spacing: 12) {
                 if pageIndex > 0 {
                     Button(action: { pageIndex -= 1 }) {
@@ -176,7 +184,7 @@ struct OnboardingCard: View {
                         pageIndex += 1
                     }
                 }) {
-                    Text(pageIndex == pages.count - 1 ? "Start Setup" : "Next")
+                    Text(pageIndex == pages.count - 1 ? "Get Started" : "Next")
                         .font(AppType.label(16, weight: .bold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
@@ -186,8 +194,9 @@ struct OnboardingCard: View {
                 }
                 .accessibilityIdentifier(pageIndex == pages.count - 1 ? "continueButton" : "onboardingNextButton")
             }
+            .padding(.top, 14)
         }
-        .padding(24)
+        .padding(22)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)

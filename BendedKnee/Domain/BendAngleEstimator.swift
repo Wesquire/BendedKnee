@@ -15,9 +15,9 @@ struct BendAngleEstimator {
 
     func isPlacementValid(gravity: CMAcceleration, pocketSide: PocketSide) -> Bool {
         let normalized = normalizedGravity(gravity: gravity, pocketSide: pocketSide)
-        let isTopUp = normalized.y <= -0.2
-        let screenFacesThigh = normalized.z >= -0.08
-        let notTurnedSideways = abs(normalized.x) <= 0.82
+        let isTopUp = normalized.y <= -0.1
+        let screenFacesThigh = normalized.z >= -0.18
+        let notTurnedSideways = abs(normalized.x) <= 0.92
         return isTopUp && screenFacesThigh && notTurnedSideways
     }
 
