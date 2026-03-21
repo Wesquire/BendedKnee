@@ -287,7 +287,7 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.statusText, "Stand still to calibrate.")
     }
 
-    func testStartSessionBecomesUnavailableWhenPlacementIsInvalid() async {
+    func testSessionStartsEvenWithInvalidPlacement() async {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
@@ -310,9 +310,8 @@ final class SessionViewModelTests: XCTestCase {
 
         motion.emit(gravity: CMAcceleration(x: 0, y: 0.9, z: 0.1))
 
-        XCTAssertTrue(viewModel.placementInvalid)
-        XCTAssertFalse(viewModel.canStartSession)
-        XCTAssertTrue(viewModel.startSessionHelperText.contains("Fix phone placement before starting"))
+        // Session can still start — placement is handled in real-time during the session
+        XCTAssertTrue(viewModel.canStartSession)
     }
 
     func testPreviewProximityServiceResetsStateAcrossStarts() {
@@ -737,7 +736,7 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.baselineAngle.map { Int($0.rounded()) }, 12)
     }
 
-    func testInvalidPlacementPreventsSessionStart() async {
+    func testSessionStartsWithInvalidPlacementAndHandlesItLive() async {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
@@ -759,9 +758,8 @@ final class SessionViewModelTests: XCTestCase {
 
         viewModel.startSession()
 
-        XCTAssertTrue(viewModel.placementInvalid)
-        XCTAssertEqual(viewModel.sessionPhase, .ready)
-        XCTAssertEqual(viewModel.statusText, "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh.")
+        // Session starts — placement is handled in real-time, not blocked
+        XCTAssertEqual(viewModel.sessionPhase, .running)
     }
 
     func testInvalidPlacementStopsCoachingDuringRunningSession() async {

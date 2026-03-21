@@ -1,3 +1,4 @@
+import AudioToolbox
 import CoreHaptics
 import Foundation
 import UIKit
@@ -42,27 +43,37 @@ final class HapticsService: HapticsControlling {
     }
 
     func playSamplePulse() {
-        playPulse(intensity: 0.58, sharpness: 0.24, includeUIKitOverlay: true)
+        startEngineIfNeeded()
+        playPulse(intensity: 0.85, sharpness: 0.50, includeUIKitOverlay: true)
     }
 
     func playCalibrationStartCue() {
+        startEngineIfNeeded()
+        // Single strong pulse + short system tone
+        AudioServicesPlaySystemSound(1103) // short begin tone
         playCueSequence([
-            CuePulse(delayNanoseconds: 0, intensity: 0.62, sharpness: 0.30, includeUIKitOverlay: true)
+            CuePulse(delayNanoseconds: 0, intensity: 0.90, sharpness: 0.55, includeUIKitOverlay: true)
         ])
     }
 
     func playCalibrationSuccessCue() {
+        startEngineIfNeeded()
+        // Double ascending pulse + success chime
+        AudioServicesPlaySystemSound(1025) // success chime
         playCueSequence([
-            CuePulse(delayNanoseconds: 0, intensity: 0.56, sharpness: 0.20, includeUIKitOverlay: true),
-            CuePulse(delayNanoseconds: 190_000_000, intensity: 0.72, sharpness: 0.28, includeUIKitOverlay: true)
+            CuePulse(delayNanoseconds: 0, intensity: 0.80, sharpness: 0.45, includeUIKitOverlay: true),
+            CuePulse(delayNanoseconds: 220_000_000, intensity: 0.95, sharpness: 0.60, includeUIKitOverlay: true)
         ])
     }
 
     func playCalibrationFailureCue() {
+        startEngineIfNeeded()
+        // Triple descending pulse + failure tone
+        AudioServicesPlaySystemSound(1073) // failure/error tone
         playCueSequence([
-            CuePulse(delayNanoseconds: 0, intensity: 0.36, sharpness: 0.18, includeUIKitOverlay: true),
-            CuePulse(delayNanoseconds: 150_000_000, intensity: 0.46, sharpness: 0.22, includeUIKitOverlay: true),
-            CuePulse(delayNanoseconds: 170_000_000, intensity: 0.60, sharpness: 0.28, includeUIKitOverlay: true)
+            CuePulse(delayNanoseconds: 0, intensity: 0.65, sharpness: 0.35, includeUIKitOverlay: true),
+            CuePulse(delayNanoseconds: 180_000_000, intensity: 0.75, sharpness: 0.45, includeUIKitOverlay: true),
+            CuePulse(delayNanoseconds: 180_000_000, intensity: 0.90, sharpness: 0.55, includeUIKitOverlay: true)
         ])
     }
 
@@ -77,7 +88,7 @@ final class HapticsService: HapticsControlling {
     }
 
     private func playPulse(for zone: HapticZone) {
-        playPulse(intensity: zone.intensity, sharpness: zone.sharpness, includeUIKitOverlay: false)
+        playPulse(intensity: zone.intensity, sharpness: zone.sharpness, includeUIKitOverlay: true)
     }
 
     private func playPulse(intensity: Float, sharpness: Float, includeUIKitOverlay: Bool) {
@@ -134,16 +145,14 @@ final class HapticsService: HapticsControlling {
         DispatchQueue.main.async {
             let style: UIImpactFeedbackGenerator.FeedbackStyle
             switch intensity {
-            case ..<0.22:
-                style = .soft
-            case ..<0.48:
-                style = .light
+            case ..<0.50:
+                style = .heavy
             default:
-                style = .medium
+                style = .rigid
             }
             let generator = UIImpactFeedbackGenerator(style: style)
             generator.prepare()
-            generator.impactOccurred(intensity: min(max(CGFloat(intensity), 0.35), 1))
+            generator.impactOccurred(intensity: 1.0)
         }
     }
 

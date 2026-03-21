@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -65,7 +65,7 @@
 		3102C89502264EB5F886923B /* HapticZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticZoneTests.swift; sourceTree = "<group>"; };
 		32870E265A510188EAF024A3 /* BendAngleEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimator.swift; sourceTree = "<group>"; };
 		358384830068289A9BC984FE /* AngleCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AngleCalculatorTests.swift; sourceTree = "<group>"; };
-		3CDB7050F744E1A74FAAC520 /* BendedKnee.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BendedKnee.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CDB7050F744E1A74FAAC520 /* Drop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Drop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43119D2BE8224E8E90E25BA9 /* BendedKneeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendedKneeUITests.swift; sourceTree = "<group>"; };
 		4B7EB568666F4F0C53741A2F /* BendedKneeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BendedKneeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CC095C7AAF9B83C1819771C /* BendAngleEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimatorTests.swift; sourceTree = "<group>"; };
@@ -160,7 +160,7 @@
 		9E7A61194CEE446E10454610 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3CDB7050F744E1A74FAAC520 /* BendedKnee.app */,
+				3CDB7050F744E1A74FAAC520 /* Drop.app */,
 				A9C2AAB411230A397E755C17 /* BendedKneeTests.xctest */,
 				4B7EB568666F4F0C53741A2F /* BendedKneeUITests.xctest */,
 			);
@@ -286,7 +286,7 @@
 			packageProductDependencies = (
 			);
 			productName = BendedKnee;
-			productReference = 3CDB7050F744E1A74FAAC520 /* BendedKnee.app */;
+			productReference = 3CDB7050F744E1A74FAAC520 /* Drop.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -316,7 +316,6 @@
 			);
 			mainGroup = 653E8CF99DBABD8508111970;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -557,6 +556,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XZAXF7Q3JG;
 				INFOPLIST_FILE = BendedKnee/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -618,6 +618,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XZAXF7Q3JG;
 				INFOPLIST_FILE = BendedKnee/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

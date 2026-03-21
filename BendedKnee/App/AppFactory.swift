@@ -36,7 +36,7 @@ enum AppFactory {
             motionService: motionService,
             proximityService: proximityService,
             hapticsService: hapticsService,
-            calibrationPrepSeconds: fastCalibration ? 1 : 4,
+            calibrationPrepSeconds: fastCalibration ? 1 : 7,
             calibrationCaptureSeconds: fastCalibration ? 2 : 6,
             calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 200_000_000 : 1_000_000_000),
             minimumCalibrationSamples: noisyCalibration ? 3 : (fastCalibration ? 1 : 8),

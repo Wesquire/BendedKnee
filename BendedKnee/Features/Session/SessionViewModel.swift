@@ -210,11 +210,11 @@ final class SessionViewModel: ObservableObject {
                 baselineAngle = baseline
                 calibrationBaselineBackup = nil
                 hasAttemptedSessionStart = false
+                placementInvalid = false
                 sessionPhase = .ready
                 statusText = "Calibration complete. Baseline locked. You can take the phone out and start when ready."
                 calibrationFeedbackStyle = .success
                 hapticsService.playCalibrationSuccessCue()
-                refreshStatusAndHaptics()
             } else {
                 baselineAngle = calibrationBaselineBackup
                 sessionPhase = calibrationBaselineBackup == nil ? .idle : .ready
@@ -230,10 +230,6 @@ final class SessionViewModel: ObservableObject {
         hasAttemptedSessionStart = true
         guard sessionPhase == .ready, baselineAngle != nil else {
             statusText = "Finish calibration before starting."
-            return
-        }
-        guard !placementInvalid else {
-            statusText = "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh."
             return
         }
 
@@ -425,13 +421,10 @@ final class SessionViewModel: ObservableObject {
     }
 
     var canStartSession: Bool {
-        sessionPhase == .ready && !placementInvalid
+        sessionPhase == .ready && baselineAngle != nil
     }
 
     var startSessionHelperText: String {
-        if shouldShowPlacementWarning {
-            return "Fix phone placement before starting. Keep it top-up with the screen against your thigh."
-        }
         if baselineAngle == nil {
             return "Pick your setup, calibrate upright, then start when the app says ready."
         }
@@ -440,11 +433,9 @@ final class SessionViewModel: ObservableObject {
 
     var shouldShowPlacementWarning: Bool {
         placementInvalid && (
-            sessionPhase == .ready ||
             calibrationStage == .capturing ||
             sessionPhase == .running ||
-            sessionPhase == .pausedPocketRemoved ||
-            hasAttemptedSessionStart
+            sessionPhase == .pausedPocketRemoved
         )
     }
 

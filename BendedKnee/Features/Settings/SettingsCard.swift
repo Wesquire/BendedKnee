@@ -63,16 +63,16 @@ struct SettingsCard: View {
 
             supportToolsContent
         }
-        .padding(22)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(AppTheme.panelSecondary)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .stroke(AppTheme.line, lineWidth: 1)
                 )
         )
-        .shadow(color: AppTheme.deepForest.opacity(0.06), radius: 18, x: 0, y: 10)
+        .shadow(color: AppTheme.deepForest.opacity(0.06), radius: 14, x: 0, y: 8)
     }
 
     private var supportToolsContent: some View {

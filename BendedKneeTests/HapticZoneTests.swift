@@ -83,12 +83,14 @@ final class HapticZoneTests: XCTestCase {
         XCTAssertEqual(HapticZone.strong.interval, 0.33, accuracy: 0.001)
     }
 
-    func testStrongZone_intensitySubtle() {
-        XCTAssertLessThanOrEqual(HapticZone.strong.intensity, 0.5)
+    func testStrongZone_intensityWithinRange() {
+        XCTAssertGreaterThan(HapticZone.strong.intensity, 0)
+        XCTAssertLessThanOrEqual(HapticZone.strong.intensity, 1.0)
     }
 
-    func testStrongZone_sharpnessSubtle() {
-        XCTAssertLessThanOrEqual(HapticZone.strong.sharpness, 0.5)
+    func testStrongZone_sharpnessWithinRange() {
+        XCTAssertGreaterThan(HapticZone.strong.sharpness, 0)
+        XCTAssertLessThanOrEqual(HapticZone.strong.sharpness, 1.0)
     }
 
     // MARK: - Labels

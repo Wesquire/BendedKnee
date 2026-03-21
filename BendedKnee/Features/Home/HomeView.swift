@@ -102,16 +102,16 @@ struct HomeView: View {
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.inkMuted)
         }
-        .padding(24)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(AppTheme.panel)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .stroke(AppTheme.line, lineWidth: 1)
                 )
         )
-        .shadow(color: AppTheme.deepForest.opacity(0.08), radius: 26, x: 0, y: 12)
+        .shadow(color: AppTheme.deepForest.opacity(0.08), radius: 20, x: 0, y: 10)
     }
 
     private var setupGuideCard: some View {
@@ -168,9 +168,9 @@ struct HomeView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(22)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(AppTheme.panelSecondary)
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -186,11 +186,11 @@ struct HomeView: View {
                 .font(AppType.title(24))
                 .foregroundStyle(AppTheme.ink)
 
-            Text("Tap calibrate, place the phone in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket during the 4-second prep countdown, then stand upright and still for the capture.")
+            Text("Tap calibrate, place the phone in your \(viewModel.settings.pocketSide.rawValue.lowercased()) front pocket during the 7-second prep countdown, then stand upright and still for the capture.")
                 .font(AppType.label(15, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
-            Text("Calibration uses a 4-second prep countdown and a longer capture window so the phone can settle before the standing baseline is locked.")
+            Text("Calibration uses a 7-second prep countdown and a capture window so the phone can settle before the standing baseline is locked.")
                 .font(AppType.label(13, weight: .medium))
                 .foregroundStyle(AppTheme.inkMuted)
 
@@ -263,9 +263,9 @@ struct HomeView: View {
             .opacity(viewModel.canStartSession ? 1 : 0.4)
             .accessibilityIdentifier("startSessionButton")
         }
-        .padding(22)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(AppTheme.panelSecondary)
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)

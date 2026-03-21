@@ -8,7 +8,7 @@ enum HapticZone: Equatable {
 
     static func zone(for deficit: Double) -> HapticZone {
         switch deficit {
-        case ..<0.5:
+        case ..<1.5:
             return .none
         case ..<5:
             return .gentle
@@ -37,11 +37,11 @@ enum HapticZone: Equatable {
         case .none:
             return 0
         case .gentle:
-            return 0.18
+            return 0.75
         case .medium:
-            return 0.30
+            return 0.90
         case .strong:
-            return 0.45
+            return 1.0
         }
     }
 
@@ -50,11 +50,11 @@ enum HapticZone: Equatable {
         case .none:
             return 0
         case .gentle:
-            return 0.08
+            return 0.55
         case .medium:
-            return 0.12
+            return 0.75
         case .strong:
-            return 0.18
+            return 1.0
         }
     }
 
