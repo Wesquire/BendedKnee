@@ -10,6 +10,8 @@ struct RootView: View {
                 OnboardingView {
                     viewModel.dismissOnboarding()
                 }
+            } else if viewModel.showWelcomeBack {
+                WelcomeBackView(dismiss: viewModel.dismissWelcomeBack)
             } else if viewModel.sessionPhase == .running || viewModel.sessionPhase == .pausedPocketRemoved {
                 SessionView(viewModel: viewModel)
             } else {
@@ -17,12 +19,12 @@ struct RootView: View {
             }
         }
         .task {
-            if scenePhase == .active && !viewModel.showOnboarding {
+            if scenePhase == .active && !viewModel.showOnboarding && !viewModel.showWelcomeBack {
                 viewModel.start()
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active && !viewModel.showOnboarding {
+            if newPhase == .active && !viewModel.showOnboarding && !viewModel.showWelcomeBack {
                 viewModel.start()
             }
             if newPhase == .background {
@@ -30,7 +32,12 @@ struct RootView: View {
             }
         }
         .onChange(of: viewModel.showOnboarding) { _, isShowingOnboarding in
-            if !isShowingOnboarding && scenePhase == .active {
+            if !isShowingOnboarding && !viewModel.showWelcomeBack && scenePhase == .active {
+                viewModel.start()
+            }
+        }
+        .onChange(of: viewModel.showWelcomeBack) { _, isShowingWelcomeBack in
+            if !isShowingWelcomeBack && !viewModel.showOnboarding && scenePhase == .active {
                 viewModel.start()
             }
         }

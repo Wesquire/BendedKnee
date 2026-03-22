@@ -2,37 +2,45 @@
 
 ## Scope
 
-This document records the validation work completed for the rebuilt and refined `Bended Knee` Swift iOS app.
+This document records the validation work completed for the rebuilt and refined `Drop` Swift iOS app.
 
 ## Build Verification
 
 - Verified final simulator build products with:
-  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -derivedDataPath /tmp/BendedKneeFinalPolish build-for-testing`
+  - `xcodegen generate`
+  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,id=F415090C-CF1B-4443-8A65-3CA535C9A903' -derivedDataPath /tmp/DropPhase13 build-for-testing`
+  - `xcrun simctl install F415090C-CF1B-4443-8A65-3CA535C9A903 /tmp/DropPhase13/Build/Products/Debug-iphonesimulator/Drop.app`
+  - `xcrun simctl launch F415090C-CF1B-4443-8A65-3CA535C9A903 com.drop.app`
 
 ## Automated Test Verification
 
 ### Full Unit Suite
 
 - Command:
-  - `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeTests`
-- Result: `93` passed, `0` failed
-- Coverage added/confirmed in the final refinement pass:
-  - first-launch-only splash persistence
-  - truthful start-session disablement when placement becomes invalid
-  - updated haptic cadence assertions
-  - session-model flow regressions remained green
+  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,id=F415090C-CF1B-4443-8A65-3CA535C9A903' -derivedDataPath /tmp/DropPhase13 test-without-building -only-testing:BendedKneeTests`
+- Result: `103` passed, `0` failed
+- Coverage added/confirmed in the latest pass:
+  - splash and welcome-back launch behavior
+  - left-pocket-only persisted setup
+  - haptics-toggle behavior
+  - slider-tick behavior
+  - calibration audio cue triggering
+  - calibration failure and interruption recovery
 
 ### Full UI Suite
 
 - Command:
-  - `xcodebuild test-without-building -xctestrun /tmp/BendedKneeFinalPolish/Build/Products/BendedKnee_iphonesimulator26.2-arm64.xctestrun -destination 'platform=iOS Simulator,arch=arm64,id=B0062079-F40F-4D87-B505-1B4AE90B5E13' -only-testing:BendedKneeUITests`
+  - `xcodebuild -project BendedKnee.xcodeproj -scheme BendedKnee -destination 'platform=iOS Simulator,id=F415090C-CF1B-4443-8A65-3CA535C9A903' -derivedDataPath /tmp/DropPhase13 test-without-building -only-testing:BendedKneeUITests`
 - Result: `11` passed, `0` failed
-- Coverage added/confirmed in the final refinement pass:
-  - splash appears when forced in UI tests
-  - onboarding completes into setup
-  - first-time support tools are visible and usable
-  - setup guide can be reopened after the new UX adjustments
-  - session end control still exists after the session layout change
+- Coverage added/confirmed in the latest pass:
+  - forced splash delay behavior
+  - first-launch onboarding
+  - returning-user welcome-back flow
+  - setup controls after onboarding
+  - instructions visibility
+  - calibration and session start flow
+  - paused pocket-removal state
+  - motion-unavailable state
 
 ## Debugger Passes Completed
 
@@ -47,16 +55,17 @@ This document records the validation work completed for the rebuilt and refined 
 
 ## Features Reviewed And Revalidated
 
-- First-launch-only branded splash behavior
+- `6` second cold-launch splash behavior
 - Full-screen onboarding
+- Welcome-back launch flow
 - Foreground/open-session warning in onboarding and setup
-- Setup guide re-entry
-- Pocket-side selection
-- Sample haptic control
+- Setup instructions visibility and collapse behavior
+- Haptics master toggle
+- Pulse-audio volume flow
 - Setup target slider and guidance copy
-- First-time setup sequencing
+- Left-pocket-only setup model
 - Truthful start-session availability
-- 3-second upright calibration flow
+- `7` second upright calibration flow
 - Noisy-calibration failure behavior
 - Motion-unavailable state
 - Session start and end flow
@@ -77,7 +86,7 @@ This document records the validation work completed for the rebuilt and refined 
 
 ## Honest End State
 
-- The app currently has a green final simulator build, a green full unit suite, and a green full UI suite on the post-refinement artifact set.
+- The app currently has a green final simulator build, a green full unit suite, and a green full UI suite on the Phase 13 artifact set.
 - The required three-pass debugger-agent review is complete and its findings are addressed in code and tests.
 - The only remaining gap is real-device validation for skating conditions and haptic tuning.
 
@@ -88,7 +97,7 @@ This document records the validation work completed for the rebuilt and refined 
   - bundle id `com.drop.app`
   - simulator launch verified with `com.drop.app: 78791`
 - Launch behavior:
-  - production splash restored to a `2.5` second branded entry screen
+  - production splash restored to a `4` second branded entry screen
   - UI-test splash override still works through launch arguments
 - Layout behavior:
   - splash, onboarding, home, and session views were rebalanced around safe-area-aware width caps and responsive sizing for tall phones including iPhone 16 Pro
@@ -107,3 +116,32 @@ This document records the validation work completed for the rebuilt and refined 
   - full unit suite: `99 / 99` passed
   - full UI suite: `11 / 11` passed
   - direct simulator install + launch of `/tmp/DropFixes/Build/Products/Debug-iphonesimulator/Drop.app`
+
+## Phase 13 Final Validation
+
+- Launch and entry:
+  - cold-launch splash updated to `6` seconds
+  - welcome-back screen appears for returning users after onboarding
+  - launch flow validated through updated UI tests and direct simulator launch
+- Coaching and setup:
+  - left-pocket-only setup and guidance are now enforced in UI and stored settings
+  - master haptics toggle disables calibration cues, live haptics, and slider ticks
+  - pulse audio remains active for session pulses and calibration cues through the existing volume slider
+  - home screen information architecture was rebuilt around `Set-Up Instructions`, `Calibration`, and `Placement`
+- Calibration:
+  - total calibration flow is now truthfully `7` seconds
+  - copy matches the actual prep/capture behavior
+  - calibration success/failure audio and haptic hooks were validated through unit tests
+- Layout and visuals:
+  - splash, onboarding, welcome-back, home, and session views now use bounded, safe-area-aware layouts
+  - the retro poster styling pass was applied consistently across those screens
+- CoreMotion warning review:
+  - searched the repo for any direct access to `/private/var/Managed Preferences/mobile/com.apple.CoreMotion.plist`
+  - found no app-side code reading that file
+  - no suppression path was identified in this codebase, so the warning is documented as a framework / OS console message rather than a repository bug
+- Validation actually run for this pass:
+  - `xcodegen generate`
+  - `xcodebuild ... build-for-testing` on `/tmp/DropPhase13`
+  - full unit suite: `103 / 103` passed
+  - full UI suite: `11 / 11` passed
+  - direct simulator install and launch of `/tmp/DropPhase13/Build/Products/Debug-iphonesimulator/Drop.app`

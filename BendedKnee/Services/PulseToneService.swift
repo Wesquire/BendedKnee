@@ -4,6 +4,9 @@ import Foundation
 protocol PulseToneControlling {
     func playPulseTone(zone: HapticZone, volume: Float)
     func playTestTone(volume: Float)
+    func playCalibrationStartTone(volume: Float)
+    func playCalibrationSuccessTone(volume: Float)
+    func playCalibrationFailureTone(volume: Float)
     func stop()
 }
 
@@ -37,6 +40,30 @@ final class PulseToneService: PulseToneControlling {
     func playTestTone(volume: Float) {
         guard volume > 0 else { return }
         playTone(frequency: 680, duration: 0.15, volume: volume)
+    }
+
+    func playCalibrationStartTone(volume: Float) {
+        guard volume > 0 else { return }
+        playTone(frequency: 560, duration: 0.14, volume: volume)
+    }
+
+    func playCalibrationSuccessTone(volume: Float) {
+        guard volume > 0 else { return }
+        playTone(frequency: 740, duration: 0.12, volume: volume)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { [weak self] in
+            self?.playTone(frequency: 920, duration: 0.14, volume: volume)
+        }
+    }
+
+    func playCalibrationFailureTone(volume: Float) {
+        guard volume > 0 else { return }
+        playTone(frequency: 520, duration: 0.10, volume: volume)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            self?.playTone(frequency: 460, duration: 0.10, volume: volume)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { [weak self] in
+            self?.playTone(frequency: 390, duration: 0.12, volume: volume)
+        }
     }
 
     func stop() {
@@ -133,5 +160,8 @@ final class PulseToneService: PulseToneControlling {
 final class NoOpPulseToneService: PulseToneControlling {
     func playPulseTone(zone: HapticZone, volume: Float) {}
     func playTestTone(volume: Float) {}
+    func playCalibrationStartTone(volume: Float) {}
+    func playCalibrationSuccessTone(volume: Float) {}
+    func playCalibrationFailureTone(volume: Float) {}
     func stop() {}
 }

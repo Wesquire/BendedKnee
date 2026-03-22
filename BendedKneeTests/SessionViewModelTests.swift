@@ -10,6 +10,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -17,6 +18,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -39,6 +41,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -46,6 +49,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -71,6 +75,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -78,6 +83,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -106,6 +112,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -113,6 +120,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 1,
@@ -133,12 +141,14 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.baselineAngle)
         XCTAssertEqual(viewModel.statusText, "Calibration failed. Hold still, keep the phone settled, and try again.")
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
+        XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
 
     func testCalibrationFailsWhenTooFewSamplesAreCollected() async {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -146,6 +156,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 4,
             maximumCalibrationSpreadDegrees: 2,
@@ -162,8 +173,9 @@ final class SessionViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.sessionPhase, .idle)
         XCTAssertNil(viewModel.baselineAngle)
-        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your front pocket, let it settle, and try again.")
+        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your left front pocket, let it settle, and try again.")
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
+        XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
 
     func testUnavailableMotionShowsUnavailableState() {
@@ -171,6 +183,7 @@ final class SessionViewModelTests: XCTestCase {
         motion.isAvailable = false
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -178,6 +191,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             defaults: defaults
         )
 
@@ -191,6 +205,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -198,6 +213,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 2,
             maximumCalibrationSpreadDegrees: 1.5,
@@ -223,6 +239,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -230,6 +247,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             defaults: defaults
         )
 
@@ -244,6 +262,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -251,6 +270,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             defaults: defaults
         )
 
@@ -266,6 +286,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -273,6 +294,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             defaults: defaults
         )
 
@@ -291,6 +313,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -298,6 +321,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -332,6 +356,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -339,6 +364,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -358,6 +384,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -365,6 +392,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -386,6 +414,7 @@ final class SessionViewModelTests: XCTestCase {
         let proximity = MockProximityService()
         proximity.currentState = false
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -393,6 +422,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -427,6 +457,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: MockPulseToneService(),
             defaults: defaults
         )
 
@@ -437,16 +468,19 @@ final class SessionViewModelTests: XCTestCase {
             motionService: MockMotionService(),
             proximityService: MockProximityService(),
             hapticsService: MockHapticsService(),
+            pulseToneService: MockPulseToneService(),
             defaults: defaults
         )
 
         XCTAssertFalse(secondViewModel.showOnboarding)
+        XCTAssertTrue(secondViewModel.showWelcomeBack)
     }
 
     func testPlayHapticSampleTriggersPreviewPulse() {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -454,6 +488,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             defaults: defaults
         )
 
@@ -472,6 +507,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: MockMotionService(),
             proximityService: MockProximityService(),
             hapticsService: MockHapticsService(),
+            pulseToneService: MockPulseToneService(),
             defaults: defaults
         )
         firstViewModel.setPocketSide(.left)
@@ -480,6 +516,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: MockMotionService(),
             proximityService: MockProximityService(),
             hapticsService: MockHapticsService(),
+            pulseToneService: MockPulseToneService(),
             defaults: defaults
         )
 
@@ -490,6 +527,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -497,6 +535,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             defaults: defaults
         )
 
@@ -515,6 +554,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -522,6 +562,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -543,6 +584,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -550,6 +592,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -571,6 +614,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -578,6 +622,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -604,12 +649,14 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.baselineAngle, originalBaseline)
         XCTAssertEqual(viewModel.statusText, "Calibration failed. Hold still, keep the phone settled, and try again.")
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
+        XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
 
     func testStartSessionIsBlockedWhileCalibrationIsRunning() async {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -617,6 +664,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             defaults: defaults
         )
@@ -636,6 +684,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -643,6 +692,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -669,6 +719,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -676,6 +727,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -705,6 +757,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -712,6 +765,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 2,
             maximumCalibrationSpreadDegrees: 1,
@@ -740,6 +794,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -747,6 +802,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -766,6 +822,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -773,6 +830,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -802,6 +860,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -809,6 +868,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationTickNanoseconds: 10_000_000,
             minimumCalibrationSamples: 3,
             maximumCalibrationSpreadDegrees: 2,
@@ -834,6 +894,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -841,6 +902,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationPrepSeconds: 1,
             calibrationCaptureSeconds: 2,
             calibrationTickNanoseconds: 10_000_000,
@@ -863,6 +925,8 @@ final class SessionViewModelTests: XCTestCase {
 
         XCTAssertEqual(haptics.calibrationStartCueCount, 1)
         XCTAssertEqual(haptics.calibrationSuccessCueCount, 1)
+        XCTAssertEqual(tones.calibrationStartToneCount, 1)
+        XCTAssertEqual(tones.calibrationSuccessToneCount, 1)
         XCTAssertEqual(viewModel.calibrationFeedbackStyle, .success)
         XCTAssertEqual(viewModel.sessionPhase, .ready)
     }
@@ -871,6 +935,7 @@ final class SessionViewModelTests: XCTestCase {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
+        let tones = MockPulseToneService()
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -878,6 +943,7 @@ final class SessionViewModelTests: XCTestCase {
             motionService: motion,
             proximityService: proximity,
             hapticsService: haptics,
+            pulseToneService: tones,
             calibrationPrepSeconds: 1,
             calibrationCaptureSeconds: 1,
             calibrationTickNanoseconds: 10_000_000,
@@ -896,9 +962,85 @@ final class SessionViewModelTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 30_000_000)
 
         XCTAssertEqual(viewModel.calibrationFeedbackStyle, .failure)
-        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your front pocket, let it settle, and try again.")
+        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your left front pocket, let it settle, and try again.")
         XCTAssertEqual(haptics.calibrationStartCueCount, 1)
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
+        XCTAssertEqual(tones.calibrationStartToneCount, 1)
+        XCTAssertEqual(tones.calibrationFailureToneCount, 1)
+    }
+
+    func testReturningUserStartsOnWelcomeBackScreen() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(true, forKey: "onboardingDismissed")
+
+        let viewModel = SessionViewModel(
+            motionService: MockMotionService(),
+            proximityService: MockProximityService(),
+            hapticsService: MockHapticsService(),
+            pulseToneService: MockPulseToneService(),
+            defaults: defaults
+        )
+
+        XCTAssertFalse(viewModel.showOnboarding)
+        XCTAssertTrue(viewModel.showWelcomeBack)
+    }
+
+    func testDismissWelcomeBackHidesReturnScreen() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(true, forKey: "onboardingDismissed")
+
+        let viewModel = SessionViewModel(
+            motionService: MockMotionService(),
+            proximityService: MockProximityService(),
+            hapticsService: MockHapticsService(),
+            pulseToneService: MockPulseToneService(),
+            defaults: defaults
+        )
+
+        viewModel.dismissWelcomeBack()
+
+        XCTAssertFalse(viewModel.showWelcomeBack)
+    }
+
+    func testDisablingHapticsStopsActiveHaptics() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let haptics = MockHapticsService()
+
+        let viewModel = SessionViewModel(
+            motionService: MockMotionService(),
+            proximityService: MockProximityService(),
+            hapticsService: haptics,
+            pulseToneService: MockPulseToneService(),
+            defaults: defaults
+        )
+
+        viewModel.setHapticsEnabled(false)
+
+        XCTAssertFalse(viewModel.settings.hapticsEnabled)
+        XCTAssertEqual(haptics.stopCount, 1)
+    }
+
+    func testTargetSliderTickRespectsHapticsToggle() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let haptics = MockHapticsService()
+
+        let viewModel = SessionViewModel(
+            motionService: MockMotionService(),
+            proximityService: MockProximityService(),
+            hapticsService: haptics,
+            pulseToneService: MockPulseToneService(),
+            defaults: defaults
+        )
+
+        viewModel.setTargetAngle(21)
+        viewModel.setHapticsEnabled(false)
+        viewModel.setTargetAngle(22)
+
+        XCTAssertEqual(haptics.sliderTickCount, 1)
     }
 }
 
@@ -970,6 +1112,7 @@ private final class MockHapticsService: HapticsControlling {
     private(set) var calibrationStartCueCount = 0
     private(set) var calibrationSuccessCueCount = 0
     private(set) var calibrationFailureCueCount = 0
+    private(set) var sliderTickCount = 0
 
     func start() {}
     func update(deficit: Double) {}
@@ -985,8 +1128,44 @@ private final class MockHapticsService: HapticsControlling {
     func playCalibrationFailureCue() {
         calibrationFailureCueCount += 1
     }
+    func playSliderTick() {
+        sliderTickCount += 1
+    }
 
     func stopAll() {
         stopCount += 1
+    }
+}
+
+private final class MockPulseToneService: PulseToneControlling {
+    private(set) var testToneCount = 0
+    private(set) var pulseToneCount = 0
+    private(set) var stopCount = 0
+    private(set) var calibrationStartToneCount = 0
+    private(set) var calibrationSuccessToneCount = 0
+    private(set) var calibrationFailureToneCount = 0
+
+    func playTestTone(volume: Float) {
+        testToneCount += 1
+    }
+
+    func playPulseTone(zone: HapticZone, volume: Float) {
+        pulseToneCount += 1
+    }
+
+    func stop() {
+        stopCount += 1
+    }
+
+    func playCalibrationStartTone(volume: Float) {
+        calibrationStartToneCount += 1
+    }
+
+    func playCalibrationSuccessTone(volume: Float) {
+        calibrationSuccessToneCount += 1
+    }
+
+    func playCalibrationFailureTone(volume: Float) {
+        calibrationFailureToneCount += 1
     }
 }

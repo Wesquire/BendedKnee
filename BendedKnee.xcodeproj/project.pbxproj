@@ -10,6 +10,7 @@
 		07A06EC49CE6DB732E35CCB2 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F5F43C923F5CC123AA3698 /* RootView.swift */; };
 		0996450DF1FC41E2933BCDB0 /* CalibrationAccumulatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EC6EC5766199E2825EE0E2 /* CalibrationAccumulatorTests.swift */; };
 		0D171BE46C65D330A942F797 /* AppFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CBFCDE62E5AC6DCFBCD338 /* AppFactory.swift */; };
+		1C448E8DF91B3BBD3FDFD707 /* WelcomeBackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D499A31A6562F32FF4D2F4F /* WelcomeBackView.swift */; };
 		2C42DB5E367E881547F2174F /* BendedKneeBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4FEF1DB7FD2A30514AE5E2 /* BendedKneeBrandMark.swift */; };
 		2E577C39FD95EB19C8D79DA1 /* SessionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7A4459590F39B21B1E5A75 /* SessionPhase.swift */; };
 		3B5E93D324721F7C81183FA1 /* BendedKneeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43119D2BE8224E8E90E25BA9 /* BendedKneeUITests.swift */; };
@@ -62,6 +63,7 @@
 		23F5F43C923F5CC123AA3698 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		245F2A5792CFCD4F0F33339B /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		2C3E21305059495E1308EBF2 /* OnboardingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCard.swift; sourceTree = "<group>"; };
+		2D499A31A6562F32FF4D2F4F /* WelcomeBackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeBackView.swift; sourceTree = "<group>"; };
 		2F5FCE332304A707098AC5F6 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		3102C89502264EB5F886923B /* HapticZoneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticZoneTests.swift; sourceTree = "<group>"; };
 		32870E265A510188EAF024A3 /* BendAngleEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BendAngleEstimator.swift; sourceTree = "<group>"; };
@@ -231,6 +233,7 @@
 				7D4FEF1DB7FD2A30514AE5E2 /* BendedKneeBrandMark.swift */,
 				A70FEBD610C6FE4CF06AD038 /* LaunchExperienceView.swift */,
 				23F5F43C923F5CC123AA3698 /* RootView.swift */,
+				2D499A31A6562F32FF4D2F4F /* WelcomeBackView.swift */,
 			);
 			name = App;
 			path = BendedKnee/App;
@@ -365,6 +368,7 @@
 				4E8DF463BAB507DFEDD4E0D6 /* SessionView.swift in Sources */,
 				7FC5462C4FB7E20FA040E321 /* SessionViewModel.swift in Sources */,
 				E28A7AED5FFDC75D58E61905 /* SettingsCard.swift in Sources */,
+				1C448E8DF91B3BBD3FDFD707 /* WelcomeBackView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

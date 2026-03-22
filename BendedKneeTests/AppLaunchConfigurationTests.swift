@@ -9,7 +9,7 @@ final class AppLaunchConfigurationTests: XCTestCase {
         let configuration = AppLaunchConfiguration(arguments: [], defaults: defaults)
 
         XCTAssertTrue(configuration.showsSplash)
-        XCTAssertEqual(configuration.splashDurationNanoseconds, 2_500_000_000)
+        XCTAssertEqual(configuration.splashDurationNanoseconds, 6_000_000_000)
         XCTAssertFalse(configuration.hasPersistedFirstLaunchSplash)
     }
 
@@ -21,7 +21,7 @@ final class AppLaunchConfigurationTests: XCTestCase {
         let secondLaunch = AppLaunchConfiguration(arguments: [], defaults: defaults)
 
         XCTAssertTrue(secondLaunch.showsSplash)
-        XCTAssertEqual(secondLaunch.splashDurationNanoseconds, 2_500_000_000)
+        XCTAssertEqual(secondLaunch.splashDurationNanoseconds, 6_000_000_000)
     }
 
     func testProductionLaunchDoesNotPersistSplashState() {
@@ -33,7 +33,7 @@ final class AppLaunchConfigurationTests: XCTestCase {
         let secondLaunch = AppLaunchConfiguration(arguments: [], defaults: defaults)
 
         XCTAssertTrue(secondLaunch.showsSplash)
-        XCTAssertEqual(secondLaunch.splashDurationNanoseconds, 2_500_000_000)
+        XCTAssertEqual(secondLaunch.splashDurationNanoseconds, 6_000_000_000)
     }
 
     func testUITestLaunchSkipsSplashByDefault() {

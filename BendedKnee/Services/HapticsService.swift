@@ -1,4 +1,3 @@
-import AudioToolbox
 import CoreHaptics
 import Foundation
 import UIKit
@@ -10,6 +9,7 @@ protocol HapticsControlling {
     func playCalibrationStartCue()
     func playCalibrationSuccessCue()
     func playCalibrationFailureCue()
+    func playSliderTick()
     func stopAll()
 }
 
@@ -49,8 +49,6 @@ final class HapticsService: HapticsControlling {
 
     func playCalibrationStartCue() {
         startEngineIfNeeded()
-        // Single strong pulse + short system tone
-        AudioServicesPlaySystemSound(1103) // short begin tone
         playCueSequence([
             CuePulse(delayNanoseconds: 0, intensity: 0.90, sharpness: 0.55, includeUIKitOverlay: true)
         ])
@@ -58,8 +56,6 @@ final class HapticsService: HapticsControlling {
 
     func playCalibrationSuccessCue() {
         startEngineIfNeeded()
-        // Double ascending pulse + success chime
-        AudioServicesPlaySystemSound(1025) // success chime
         playCueSequence([
             CuePulse(delayNanoseconds: 0, intensity: 0.80, sharpness: 0.45, includeUIKitOverlay: true),
             CuePulse(delayNanoseconds: 220_000_000, intensity: 0.95, sharpness: 0.60, includeUIKitOverlay: true)
@@ -68,13 +64,19 @@ final class HapticsService: HapticsControlling {
 
     func playCalibrationFailureCue() {
         startEngineIfNeeded()
-        // Triple descending pulse + failure tone
-        AudioServicesPlaySystemSound(1073) // failure/error tone
         playCueSequence([
             CuePulse(delayNanoseconds: 0, intensity: 0.65, sharpness: 0.35, includeUIKitOverlay: true),
             CuePulse(delayNanoseconds: 180_000_000, intensity: 0.75, sharpness: 0.45, includeUIKitOverlay: true),
             CuePulse(delayNanoseconds: 180_000_000, intensity: 0.90, sharpness: 0.55, includeUIKitOverlay: true)
         ])
+    }
+
+    func playSliderTick() {
+        DispatchQueue.main.async {
+            let generator = UISelectionFeedbackGenerator()
+            generator.prepare()
+            generator.selectionChanged()
+        }
     }
 
     func stopAll() {
@@ -200,5 +202,6 @@ final class NoOpHapticsService: HapticsControlling {
     func playCalibrationStartCue() {}
     func playCalibrationSuccessCue() {}
     func playCalibrationFailureCue() {}
+    func playSliderTick() {}
     func stopAll() {}
 }

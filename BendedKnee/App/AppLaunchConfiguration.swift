@@ -17,10 +17,10 @@ struct AppLaunchConfiguration {
             self.splashDurationNanoseconds = 0
         } else if uiTesting {
             self.showsSplash = true
-            self.splashDurationNanoseconds = fastSplash ? 2_000_000_000 : 2_500_000_000
+            self.splashDurationNanoseconds = fastSplash ? 2_000_000_000 : 6_000_000_000
         } else {
             self.showsSplash = true
-            self.splashDurationNanoseconds = 2_500_000_000
+            self.splashDurationNanoseconds = 6_000_000_000
         }
     }
 

@@ -5,11 +5,11 @@ struct SessionView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let angleFontSize: CGFloat = min(104, geometry.size.width * 0.24)
-            let contentWidth = min(geometry.size.width - 24, 560)
+            let angleFontSize: CGFloat = min(104, geometry.size.width * 0.22)
+            let contentWidth = min(geometry.size.width - 22, 520)
 
             ZStack {
-                AppTheme.sessionBackground.ignoresSafeArea()
+                PosterBackdrop(style: .session).ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 18) {
@@ -31,6 +31,7 @@ struct SessionView: View {
                                 .minimumScaleFactor(0.55)
                                 .opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.18 : 1)
                                 .accessibilityIdentifier("sessionAngleText")
+                                .frame(maxWidth: .infinity)
 
                             Text("Target \(viewModel.targetAngleText)")
                                 .font(.system(size: 26, weight: .bold, design: .rounded))
@@ -75,8 +76,8 @@ struct SessionView: View {
                     }
                     .frame(maxWidth: contentWidth)
                     .padding(.horizontal, 12)
-                    .padding(.top, max(geometry.safeAreaInsets.top, 12) + 12)
-                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 16) + 8)
+                    .padding(.top, max(geometry.safeAreaInsets.top, 10) + 8)
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 16) + 12)
                     .frame(maxWidth: .infinity)
                 }
             }

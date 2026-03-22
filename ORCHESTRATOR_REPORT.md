@@ -9,10 +9,11 @@
 
 - Single-phone front-pocket thigh-angle proxy
 - `CoreMotion` baseline-relative bend estimation
-- `CoreHaptics` subtle escalating feedback
-- 3-second calibration delay
+- pulse-audio-first coaching with optional `CoreHaptics`
+- `7` second total calibration flow
 - Target range `0...60`
 - Foreground-active session model with auto-lock disabled during live sessions
+- left-pocket-only operation
 
 ## Critical Technical Truth
 
@@ -28,20 +29,23 @@
   - `ExponentialSmoother`
   - `CalibrationAccumulator`
 - Session behavior:
-  - 3-second calibration countdown
+  - `6` second cold-launch splash
+  - recurring welcome-back screen after onboarding
+  - `7` second calibration flow
   - live numeric bend display
-  - deficit-driven haptic zones
+  - deficit-driven pulse audio plus optional haptic zones
   - proximity-driven pocket-removal pause
   - automatic resume when the phone returns
 - Persistence:
   - target angle
-  - pocket side
+  - haptics enabled
+  - pulse volume
   - onboarding dismissal
 
 ## Validation Status
 
-- Latest simulator build-for-testing: passed on `/tmp/BendedKneeFinalPolish`
-- Full unit suite: passed (`93` / `93`)
+- Latest simulator build-for-testing: passed on `/tmp/DropPhase13`
+- Full unit suite: passed (`103` / `103`)
 - Full UI suite: passed (`11` / `11`)
 
 ## Debugger Review Outcome
@@ -62,7 +66,9 @@
 - calibration averaging and stability gates
 - haptic zone logic
 - session state transitions
-- pocket-side persistence and selection
+- launch and welcome-back state
+- left-pocket-only persisted setup
+- haptics-toggle and audio-volume behavior
 - interrupted recalibration recovery
 - initial out-of-pocket startup handling
 - unavailable-motion flow
@@ -96,18 +102,19 @@
 
 ## Final Verified End State
 
-- The app now opens with a branded splash on first launch, then transitions into a full-screen onboarding flow that no longer dead-ends.
-- First-time setup is linear and clearer:
-  - pick pocket side
+- The app now opens with a `6` second branded splash on cold launch, then transitions into onboarding on first use or a welcome-back screen on return launches.
+- Setup is now left-pocket-only and clearer:
   - set target bend
+  - set haptics and pulse-audio volume
   - calibrate
   - start session
-- The support tools are surfaced inline before first calibration, then collapse into a named helper area afterward.
-- Session start is now honest about invalid placement, and the session stop affordance is easier to hit.
-- Fresh validation on the post-refinement artifact is fully green:
+- The setup guidance lives in a `Set-Up Instructions` card with `Calibration` and `Placement` sections and auto-collapses after successful calibration.
+- Session coaching now combines pulse audio with optional haptics, and calibration messaging matches the real `7` second flow.
+- Fresh validation on the Phase 13 artifact is fully green:
   - `build-for-testing` passed
-  - full unit suite `93 / 93`
+  - full unit suite `103 / 103`
   - full UI suite `11 / 11`
+  - simulator install and launch passed for `com.drop.app`
 
 ## Phase 8 Debugger Protocol
 
@@ -169,5 +176,47 @@
 - Final validation for this pass is green on `/tmp/DropFixes`:
   - `build-for-testing` passed
   - full unit suite `99 / 99`
+  - full UI suite `11 / 11`
+  - simulator install and launch passed for `com.drop.app`
+
+## Phase 13 Active Orchestration
+
+- A new coordinated pass is now active for:
+  - launch-flow changes
+  - recurring welcome-back entry
+  - left-pocket-only product constraints
+  - haptics/audio control changes
+  - truthful 7-second calibration
+  - home-screen information architecture cleanup
+  - stronger 70s poster styling
+  - structural layout correction for iPhone 16 Pro
+- The execution order for this pass is:
+  - planning and tracking
+  - launch/app-state changes
+  - coaching/settings logic changes
+  - home IA and calibration copy changes
+  - visual and responsive-layout rebuild
+  - full validation
+- Governing plan:
+  - `/Users/wesquire/Github/Bended Knee/PHASE_13_LAUNCH_LAYOUT_AUDIO_PLAN.md`
+- Evidence file:
+  - `/Users/wesquire/Github/Bended Knee/tests/PHASE_13_LAUNCH_LAYOUT_AUDIO.md`
+- Final completed sequence for this pass:
+  - reviewed and locked the launch, settings, calibration, onboarding, home, and theme code paths
+  - implemented launch-state changes for `6` second splash plus recurring welcome-back entry
+  - converted the product and copy surface to left-pocket-only behavior
+  - added a master haptics toggle while preserving pulse audio via the existing volume slider
+  - rebuilt the setup card into `Set-Up Instructions` with `Calibration` and `Placement` sections
+  - applied a stronger poster-style visual system and responsive layout corrections across all major screens
+  - regenerated the Xcode project to include the new welcome-back screen file
+  - refreshed the unit and UI suites to match the new behavior, then reran them to green
+- Honest CoreMotion note:
+  - the warning about `/private/var/Managed Preferences/mobile/com.apple.CoreMotion.plist` was investigated
+  - no repo code reads that file directly
+  - no app-side suppression path was identified in this codebase, so it is being treated as a framework / OS console message rather than an app logic bug
+- Final validation for this pass is green on `/tmp/DropPhase13`:
+  - `xcodegen generate` passed
+  - `build-for-testing` passed
+  - full unit suite `103 / 103`
   - full UI suite `11 / 11`
   - simulator install and launch passed for `com.drop.app`

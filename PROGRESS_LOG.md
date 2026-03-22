@@ -278,3 +278,43 @@
 - Full unit suite: `99` tests passed, `0` failures
 - Full UI suite: `11` tests passed, `0` failures
 - Direct simulator install and launch passed: `com.drop.app`
+
+### Phase 13 - Launch, Layout, Audio, and Setup Overhaul
+
+- Opened a new structured pass for launch flow, welcome-back state, left-pocket-only rules, haptics controls, calibration truthfulness, home-screen restructuring, and the stronger 70s poster redesign.
+- Created the governing plan file: `/Users/wesquire/Github/Bended Knee/PHASE_13_LAUNCH_LAYOUT_AUDIO_PLAN.md`
+- Created the phase evidence file: `/Users/wesquire/Github/Bended Knee/tests/PHASE_13_LAUNCH_LAYOUT_AUDIO.md`
+- Locked these product decisions before implementation:
+  - left pocket only everywhere
+  - `6` second cold-launch splash
+  - welcome-back screen on every launch after onboarding
+  - haptics toggle disables all haptics
+  - pulse audio remains critical and keeps the current volume-slider model
+  - calibration must actually take `7` seconds and all copy must match
+  - setup instructions remain available but auto-collapse after calibration
+- Implemented the Phase 13 launch overhaul:
+  - `6` second cold-launch splash
+  - recurring welcome-back screen after onboarding
+  - deterministic UI-test hooks for returning-user and splash paths
+- Implemented the Phase 13 coaching/settings overhaul:
+  - left-pocket-only rules and copy
+  - master haptics toggle for all haptic cues
+  - preserved session/calibration pulse audio with volume slider control
+  - removed pocket-side picker and sample-pulse UI
+- Implemented the Phase 13 home and calibration overhaul:
+  - replaced the old setup block with `Set-Up Instructions`
+  - added `Calibration` and `Placement` subsections
+  - auto-collapsed instructions after successful calibration
+  - updated calibration to a truthful `7` second total flow and matching copy
+- Implemented the Phase 13 visual/layout overhaul:
+  - stronger 70s poster palette and motif system
+  - responsive width caps and safe-area-aware spacing across splash, onboarding, welcome-back, home, and session screens
+- Reviewed the CoreMotion managed-preferences warning and verified there is no direct repo code reading `/private/var/Managed Preferences/mobile/com.apple.CoreMotion.plist`; no app-side suppression path was found.
+
+#### Phase 13 Validation Results
+
+- `xcodegen generate` passed
+- `build-for-testing` passed on `/tmp/DropPhase13`
+- Full unit suite: `103` tests passed, `0` failures
+- Full UI suite: `11` tests passed, `0` failures
+- Direct simulator install and launch passed: `com.drop.app: 41815`

@@ -30,7 +30,12 @@ enum AppFactory {
             guard uiTesting else { return .standard }
             let suiteName = "DropUITests"
             let defaults = UserDefaults(suiteName: suiteName) ?? .standard
-            defaults.removePersistentDomain(forName: suiteName)
+            if !arguments.contains("PRESERVE_DEFAULTS") {
+                defaults.removePersistentDomain(forName: suiteName)
+            }
+            if arguments.contains("RETURNING_USER") {
+                defaults.set(true, forKey: "onboardingDismissed")
+            }
             return defaults
         }()
         return SessionViewModel(
@@ -38,8 +43,8 @@ enum AppFactory {
             proximityService: proximityService,
             hapticsService: hapticsService,
             pulseToneService: pulseToneService,
-            calibrationPrepSeconds: fastCalibration ? 1 : 7,
-            calibrationCaptureSeconds: fastCalibration ? 2 : 6,
+            calibrationPrepSeconds: fastCalibration ? 1 : 4,
+            calibrationCaptureSeconds: fastCalibration ? 1 : 3,
             calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 200_000_000 : 1_000_000_000),
             minimumCalibrationSamples: noisyCalibration ? 3 : (fastCalibration ? 1 : 8),
             maximumCalibrationSpreadDegrees: noisyCalibration ? 1 : (fastCalibration ? 5 : 4.5),

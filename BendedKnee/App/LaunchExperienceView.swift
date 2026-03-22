@@ -40,28 +40,7 @@ struct SplashView: View {
             let titleSize = min(max(geometry.size.width * 0.10, 32), 48)
 
             ZStack {
-                LinearGradient(
-                    colors: [
-                        AppTheme.paper,
-                        AppTheme.sand,
-                        AppTheme.mist.opacity(0.92)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-
-                Circle()
-                    .fill(AppTheme.accentSoft.opacity(0.22))
-                    .frame(width: geometry.size.width * 0.75, height: geometry.size.width * 0.75)
-                    .blur(radius: 18)
-                    .offset(x: geometry.size.width * 0.28, y: -geometry.size.height * 0.28)
-
-                Circle()
-                    .fill(AppTheme.mist.opacity(0.30))
-                    .frame(width: geometry.size.width * 0.62, height: geometry.size.width * 0.62)
-                    .blur(radius: 24)
-                    .offset(x: -geometry.size.width * 0.34, y: geometry.size.height * 0.30)
+                PosterBackdrop(style: .warm).ignoresSafeArea()
 
                 VStack(spacing: max(20, geometry.size.height * 0.026)) {
                     Spacer()
@@ -73,22 +52,24 @@ struct SplashView: View {
                     )
 
                     Text("Pocket coach for deeper knee bend")
-                        .font(AppType.label(16, weight: .bold))
-                        .foregroundStyle(AppTheme.inkMuted)
+                        .font(AppType.posterTitle(18))
+                        .foregroundStyle(AppTheme.deepInk)
+                        .textCase(.uppercase)
+                        .multilineTextAlignment(.center)
                         .accessibilityIdentifier("splashTagline")
 
-                    Text("Set your pocket. Lock your baseline. Keep the app open while you skate.")
+                    Text("Left pocket. Big posture coaching. Vibrations and pulse audio that hit faster.")
                         .font(AppType.label(13, weight: .semibold))
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(AppTheme.inkMuted.opacity(0.88))
+                        .foregroundStyle(AppTheme.deepInk.opacity(0.84))
                         .frame(maxWidth: contentWidth - 24)
 
                     Spacer()
                 }
                 .frame(maxWidth: contentWidth)
                 .padding(.horizontal, 16)
-                .padding(.top, geometry.safeAreaInsets.top + 8)
-                .padding(.bottom, geometry.safeAreaInsets.bottom + 8)
+                .padding(.top, geometry.safeAreaInsets.top + 12)
+                .padding(.bottom, geometry.safeAreaInsets.bottom + 14)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }

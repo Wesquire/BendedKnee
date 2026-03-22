@@ -5,23 +5,17 @@ struct OnboardingView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let horizontalPadding = min(max(geometry.size.width * 0.055, 16), 28)
-            let verticalSpacing = min(max(geometry.size.height * 0.018, 12), 20)
+            let horizontalPadding = min(max(geometry.size.width * 0.05, 14), 24)
+            let verticalSpacing = min(max(geometry.size.height * 0.016, 8), 16)
 
             ZStack {
-                AppTheme.homeBackground.ignoresSafeArea()
-
-                Circle()
-                    .fill(AppTheme.accentSoft.opacity(0.16))
-                    .frame(width: min(geometry.size.width * 0.64, 280), height: min(geometry.size.width * 0.64, 280))
-                    .blur(radius: 20)
-                    .offset(x: 120, y: -geometry.size.height * 0.28)
+                PosterBackdrop(style: .home).ignoresSafeArea()
 
                 VStack(spacing: verticalSpacing) {
                     DropBrandMark(
                         iconSize: min(max(geometry.size.width * 0.18, 72), 94),
                         titleSize: min(max(geometry.size.width * 0.08, 26), 32),
-                        subtitle: "Skate low. Stay groovy."
+                        subtitle: "Left pocket coaching with poster-grade attitude."
                     )
                     .padding(.top, geometry.safeAreaInsets.top + 4)
 
@@ -44,29 +38,29 @@ struct OnboardingCard: View {
         OnboardingPage(
             eyebrow: "WHAT IT DOES",
             title: "Drop coaches depth, not medical angle.",
-            body: "The app uses your phone in one front pocket to estimate how much extra bend you have beyond upright standing.",
+            body: "Drop uses your phone in your left front pocket to estimate how much extra bend you have beyond upright standing.",
             bullets: [
                 "The live number is bend from standing.",
-                "Haptics warn you when you rise too tall.",
+                "Haptics and pulse audio warn you when you rise too tall.",
                 "The app must stay open while you skate."
             ],
             symbol: "figure.skating"
         ),
         OnboardingPage(
             eyebrow: "PLACEMENT",
-            title: "Pick one front pocket and keep it consistent.",
-            body: "Use the same front pocket every session. Keep the phone top-up and the screen facing your thigh.",
+            title: "Drop is built for the left front pocket.",
+            body: "Use your left front pocket every session. Keep the phone top-up and the screen facing your thigh.",
             bullets: [
-                "Left or right pocket both work.",
+                "Left pocket is the supported position.",
                 "If the phone shifts, recalibrate.",
-                "Choose your pocket side and target on the next screen."
+                "Choose your target bend on the next screen."
             ],
             symbol: "iphone.gen3"
         ),
         OnboardingPage(
             eyebrow: "WHEN YOU SKATE",
-            title: "Calibrate upright, then let the haptics coach you.",
-            body: "Stand still for a baseline capture. During your session, faster haptics mean you need more knee bend.",
+            title: "Calibrate upright, then let the audio and haptics coach you.",
+            body: "Stand still for a 7-second calibration. During your session, faster pulse patterns mean you need more knee bend.",
             bullets: [
                 "Target means extra bend beyond standing.",
                 "If the phone leaves your pocket, coaching pauses.",
@@ -203,10 +197,10 @@ struct OnboardingCard: View {
                 .fill(AppTheme.panelStrong)
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(AppTheme.line, lineWidth: 1)
+                        .stroke(Color.white.opacity(0.76), lineWidth: 2)
                 )
         )
-        .shadow(color: Color.black.opacity(0.08), radius: 24, x: 0, y: 10)
+        .shadow(color: AppTheme.deepInk.opacity(0.18), radius: 24, x: 0, y: 12)
     }
 }
 

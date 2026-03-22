@@ -12,6 +12,7 @@ final class SessionViewModel: ObservableObject {
     @Published private(set) var statusText: String = "Stand still to calibrate."
     @Published private(set) var placementInvalid = false
     @Published var showOnboarding: Bool
+    @Published var showWelcomeBack: Bool
     @Published private(set) var calibrationStage: CalibrationStage?
     @Published private(set) var calibrationFeedbackStyle: CalibrationFeedbackStyle = .neutral
 
@@ -68,12 +69,13 @@ final class SessionViewModel: ObservableObject {
         self.testingAutoPauseAfterNanoseconds = testingAutoPauseAfterNanoseconds
         self.defaults = defaults
         let storedTarget = defaults.object(forKey: Keys.targetAngle) as? Double ?? 20
-        let storedPocketSide = PocketSide(rawValue: defaults.string(forKey: Keys.pocketSide) ?? "") ?? .right
+        let storedPocketSide: PocketSide = .left
         let storedVolume = defaults.object(forKey: Keys.pulseVolume) as? Double ?? 0.6
-        let storedAudioEnabled = defaults.object(forKey: Keys.pulseAudioEnabled) as? Bool ?? true
+        let storedHapticsEnabled = defaults.object(forKey: Keys.hapticsEnabled) as? Bool ?? true
         let shouldShowOnboarding = !defaults.bool(forKey: Keys.onboardingDismissed)
-        self.settings = AppSettings(pocketSide: storedPocketSide, targetAngle: storedTarget, pulseVolume: storedVolume, pulseAudioEnabled: storedAudioEnabled)
+        self.settings = AppSettings(pocketSide: storedPocketSide, targetAngle: storedTarget, pulseVolume: storedVolume, hapticsEnabled: storedHapticsEnabled)
         self.showOnboarding = shouldShowOnboarding
+        self.showWelcomeBack = !shouldShowOnboarding
         self.sessionPhase = shouldShowOnboarding ? .onboarding : .idle
     }
 
@@ -94,13 +96,22 @@ final class SessionViewModel: ObservableObject {
 
     func dismissOnboarding() {
         showOnboarding = false
+        showWelcomeBack = false
         defaults.set(true, forKey: Keys.onboardingDismissed)
         if sessionPhase == .onboarding {
             sessionPhase = baselineAngle == nil ? .idle : .ready
         }
     }
 
+    func dismissWelcomeBack() {
+        showWelcomeBack = false
+    }
+
     func playHapticSample() {
+        guard settings.hapticsEnabled else {
+            statusText = "Haptics are turned off."
+            return
+        }
         hapticsService.start()
         hapticsService.playSamplePulse()
         calibrationFeedbackStyle = .neutral
@@ -108,22 +119,19 @@ final class SessionViewModel: ObservableObject {
     }
 
     func setTargetAngle(_ angle: Double) {
+        let previousRounded = Int(settings.targetAngle.rounded())
         let clamped = min(max(angle, AppSettings.targetRange.lowerBound), AppSettings.targetRange.upperBound)
         settings.targetAngle = clamped.rounded()
         defaults.set(settings.targetAngle, forKey: Keys.targetAngle)
+        if Int(settings.targetAngle.rounded()) != previousRounded {
+            playSliderTick()
+        }
         refreshStatusAndHaptics()
     }
 
     func setPocketSide(_ pocketSide: PocketSide) {
-        settings.pocketSide = pocketSide
-        defaults.set(pocketSide.rawValue, forKey: Keys.pocketSide)
-        if let latestMotionSnapshot {
-            placementInvalid = !estimator.isPlacementValid(
-                gravity: latestMotionSnapshot.gravity,
-                pocketSide: settings.pocketSide
-            )
-        }
-        refreshStatusAndHaptics()
+        settings.pocketSide = .left
+        defaults.set(PocketSide.left.rawValue, forKey: Keys.pocketSide)
     }
 
     func setPulseVolume(_ volume: Double) {
@@ -132,17 +140,19 @@ final class SessionViewModel: ObservableObject {
         defaults.set(settings.pulseVolume, forKey: Keys.pulseVolume)
     }
 
-    func setPulseAudioEnabled(_ enabled: Bool) {
-        settings.pulseAudioEnabled = enabled
-        defaults.set(enabled, forKey: Keys.pulseAudioEnabled)
+    func setHapticsEnabled(_ enabled: Bool) {
+        settings.hapticsEnabled = enabled
+        defaults.set(enabled, forKey: Keys.hapticsEnabled)
         if !enabled {
-            pulseToneService.stop()
+            hapticsService.stopAll()
+        } else if sessionPhase == .running {
+            hapticsService.start()
+            refreshStatusAndHaptics()
         }
     }
 
     func playTestTone() {
-        let volume = settings.pulseAudioEnabled ? Float(settings.pulseVolume) : 0
-        pulseToneService.playTestTone(volume: volume)
+        pulseToneService.playTestTone(volume: Float(settings.pulseVolume))
     }
 
     func beginCalibration() {
@@ -165,7 +175,7 @@ final class SessionViewModel: ObservableObject {
         calibrationStage = .preparing
         calibrationFeedbackStyle = .preparing
         sessionPhase = .calibrating(secondsRemaining: calibrationPrepSeconds)
-        statusText = "Get ready. Put the phone in your front pocket before capture begins."
+        statusText = "Get ready. Put the phone in your left front pocket before capture begins."
 
         calibrationTask = Task { [weak self] in
             guard let self else { return }
@@ -173,7 +183,7 @@ final class SessionViewModel: ObservableObject {
                 guard runID == calibrationRunID else { return }
                 calibrationStage = .preparing
                 sessionPhase = .calibrating(secondsRemaining: remaining)
-                statusText = "Get ready. Put the phone in your front pocket. Capture starts in \(remaining)s."
+                statusText = "Get ready. Put the phone in your left front pocket. Capture starts in \(remaining)s."
                 do {
                     try await Task.sleep(nanoseconds: calibrationTickNanoseconds)
                     try Task.checkCancellation()
@@ -195,7 +205,7 @@ final class SessionViewModel: ObservableObject {
             currentAngle = 0
             placementInvalid = false
             statusText = "Calibration started. Stand upright and stay still."
-            hapticsService.playCalibrationStartCue()
+            playCalibrationStartFeedback()
 
             for remaining in stride(from: calibrationCaptureSeconds, through: 1, by: -1) {
                 guard runID == calibrationRunID else { return }
@@ -222,10 +232,10 @@ final class SessionViewModel: ObservableObject {
             if placementInvalid || calibrationPlacementFailed {
                 baselineAngle = calibrationBaselineBackup
                 sessionPhase = calibrationBaselineBackup == nil ? .idle : .ready
-                statusText = "Calibration failed. Put the phone in your front pocket, let it settle, and try again."
+                statusText = "Calibration failed. Put the phone in your left front pocket, let it settle, and try again."
                 calibrationFeedbackStyle = .failure
                 calibrationBaselineBackup = nil
-                hapticsService.playCalibrationFailureCue()
+                playCalibrationFailureFeedback()
                 return
             }
 
@@ -240,14 +250,14 @@ final class SessionViewModel: ObservableObject {
                 sessionPhase = .ready
                 statusText = "Calibration complete. Baseline locked. You can take the phone out and start when ready."
                 calibrationFeedbackStyle = .success
-                hapticsService.playCalibrationSuccessCue()
+                playCalibrationSuccessFeedback()
             } else {
                 baselineAngle = calibrationBaselineBackup
                 sessionPhase = calibrationBaselineBackup == nil ? .idle : .ready
                 statusText = "Calibration failed. Hold still, keep the phone settled, and try again."
                 calibrationFeedbackStyle = .failure
                 calibrationBaselineBackup = nil
-                hapticsService.playCalibrationFailureCue()
+                playCalibrationFailureFeedback()
             }
         }
     }
@@ -261,7 +271,9 @@ final class SessionViewModel: ObservableObject {
 
         calibrationTask?.cancel()
         UIApplication.shared.isIdleTimerDisabled = true
-        hapticsService.start()
+        if settings.hapticsEnabled {
+            hapticsService.start()
+        }
         pocketPresent = true
         testingAutoPauseTask?.cancel()
         sessionPhase = .running
@@ -276,7 +288,9 @@ final class SessionViewModel: ObservableObject {
                 try? await Task.sleep(nanoseconds: delay)
                 guard let self, self.sessionPhase == .running else { return }
                 self.pocketPresent = false
-                self.hapticsService.stopAll()
+                if self.settings.hapticsEnabled {
+                    self.hapticsService.stopAll()
+                }
                 self.sessionPhase = .pausedPocketRemoved
                 self.statusText = "Phone removed. Haptics paused."
             }
@@ -411,9 +425,9 @@ final class SessionViewModel: ObservableObject {
 
     var setupSummaryDetail: String {
         if baselineAngle != nil {
-            return "Baseline ready. Fine-tune pocket side or target below any time before you start skating."
+            return "Baseline ready. Fine-tune your target, haptics, and audio below any time before you start skating."
         }
-        return "Open this guide for placement rules, then fine-tune your pocket side and target below."
+        return "Open this guide for placement rules, then fine-tune your target, haptics, and audio below."
     }
 
     var setupStepTitle: String {
@@ -428,7 +442,7 @@ final class SessionViewModel: ObservableObject {
         case .running:
             return "Keep the app open and awake while you skate. Do not background it or the session will pause."
         case .pausedPocketRemoved:
-            return "Phone removed. Haptics pause until the phone is back in your front pocket."
+            return "Phone removed. Coaching pauses until the phone is back in your left front pocket."
         case .ready:
             return "Calibration complete. Your target is extra bend beyond your natural standing posture."
         case .calibrating(let secondsRemaining):
@@ -443,7 +457,7 @@ final class SessionViewModel: ObservableObject {
         case .unavailable(let message):
             return message
         case .onboarding, .idle:
-            return "Use your \(settings.pocketSide.rawValue.lowercased()) front pocket, keep the phone top-up with the screen toward your thigh, then calibrate upright."
+            return "Use your left front pocket, keep the phone top-up with the screen toward your thigh, then calibrate upright."
         }
     }
 
@@ -488,11 +502,11 @@ final class SessionViewModel: ObservableObject {
         case .capturing:
             return "Once capture starts, stay upright and quiet until the countdown finishes. Drop ignores brief pocket-settling noise but still needs a mostly stable capture."
         case .success:
-            return "Baseline saved. A double pulse marks completion so you know you can look at the phone again."
+            return "Baseline saved. You will feel the completion vibration and hear the confirmation sound when it is done."
         case .failure:
             return "If the phone was moving, upside down, or not settled in your pocket, try calibration again."
         case .neutral:
-            return "The app compares your live bend against this upright standing baseline."
+            return ""
         }
     }
 
@@ -520,7 +534,9 @@ final class SessionViewModel: ObservableObject {
         if placementInvalid {
             currentAngle = 0
             if sessionPhase == .running {
-                hapticsService.stopAll()
+                if settings.hapticsEnabled {
+                    hapticsService.stopAll()
+                }
             }
             if shouldShowPlacementWarning && sessionPhase != .pausedPocketRemoved {
                 statusText = "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh."
@@ -555,7 +571,9 @@ final class SessionViewModel: ObservableObject {
                 refreshStatusAndHaptics()
             }
         } else {
-            hapticsService.stopAll()
+            if settings.hapticsEnabled {
+                hapticsService.stopAll()
+            }
             sessionPhase = .pausedPocketRemoved
             statusText = "Phone removed. Haptics paused."
         }
@@ -564,7 +582,9 @@ final class SessionViewModel: ObservableObject {
     private func refreshStatusAndHaptics() {
         guard case .running = sessionPhase else {
             if sessionPhase != .pausedPocketRemoved {
-                hapticsService.stopAll()
+                if settings.hapticsEnabled {
+                    hapticsService.stopAll()
+                }
                 stopTonePulse()
             }
             if baselineAngle != nil, sessionPhase == .ready, calibrationFeedbackStyle == .neutral {
@@ -574,14 +594,18 @@ final class SessionViewModel: ObservableObject {
         }
 
         guard !placementInvalid else {
-            hapticsService.stopAll()
+            if settings.hapticsEnabled {
+                hapticsService.stopAll()
+            }
             stopTonePulse()
             statusText = "Phone orientation invalid. Reinsert it top-up with the screen toward your thigh."
             return
         }
 
         guard pocketPresent else {
-            hapticsService.stopAll()
+            if settings.hapticsEnabled {
+                hapticsService.stopAll()
+            }
             stopTonePulse()
             return
         }
@@ -589,7 +613,11 @@ final class SessionViewModel: ObservableObject {
         let deficit = max(0, settings.targetAngle - currentAngle)
         let zone = HapticZone.zone(for: deficit)
         statusText = zone.label
-        hapticsService.update(deficit: deficit)
+        if settings.hapticsEnabled {
+            hapticsService.update(deficit: deficit)
+        } else {
+            hapticsService.stopAll()
+        }
         updateTonePulse(zone: zone)
     }
 
@@ -599,13 +627,13 @@ final class SessionViewModel: ObservableObject {
         toneTimer?.invalidate()
         toneTimer = nil
 
-        guard zone != .none, settings.pulseAudioEnabled, settings.pulseVolume > 0 else { return }
+        guard zone != .none, settings.pulseVolume > 0 else { return }
 
         let volume = Float(settings.pulseVolume)
         pulseToneService.playPulseTone(zone: zone, volume: volume)
         let timer = Timer(timeInterval: zone.interval, repeats: true) { [weak self] _ in
             guard let self else { return }
-            if self.settings.pulseAudioEnabled && self.settings.pulseVolume > 0 {
+            if self.settings.pulseVolume > 0 {
                 self.pulseToneService.playPulseTone(zone: zone, volume: Float(self.settings.pulseVolume))
             }
         }
@@ -630,6 +658,32 @@ final class SessionViewModel: ObservableObject {
         sessionPhase = restoredBaseline == nil ? .idle : .ready
         calibrationBaselineBackup = nil
     }
+
+    private func playCalibrationStartFeedback() {
+        if settings.hapticsEnabled {
+            hapticsService.playCalibrationStartCue()
+        }
+        pulseToneService.playCalibrationStartTone(volume: Float(settings.pulseVolume))
+    }
+
+    private func playCalibrationSuccessFeedback() {
+        if settings.hapticsEnabled {
+            hapticsService.playCalibrationSuccessCue()
+        }
+        pulseToneService.playCalibrationSuccessTone(volume: Float(settings.pulseVolume))
+    }
+
+    private func playCalibrationFailureFeedback() {
+        if settings.hapticsEnabled {
+            hapticsService.playCalibrationFailureCue()
+        }
+        pulseToneService.playCalibrationFailureTone(volume: Float(settings.pulseVolume))
+    }
+
+    private func playSliderTick() {
+        guard settings.hapticsEnabled else { return }
+        hapticsService.playSliderTick()
+    }
 }
 
 private extension SessionViewModel {
@@ -638,7 +692,7 @@ private extension SessionViewModel {
         static let targetAngle = "targetAngle"
         static let pocketSide = "pocketSide"
         static let pulseVolume = "pulseVolume"
-        static let pulseAudioEnabled = "pulseAudioEnabled"
+        static let hapticsEnabled = "hapticsEnabled"
     }
 }
 

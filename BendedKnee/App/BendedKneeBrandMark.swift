@@ -180,7 +180,7 @@ private struct SkateWheelsView: View {
 
 // MARK: - Shapes
 
-private struct SunburstShape: Shape {
+struct SunburstShape: Shape {
     let rayCount: Int
     let rayWidthFraction: Double
 
