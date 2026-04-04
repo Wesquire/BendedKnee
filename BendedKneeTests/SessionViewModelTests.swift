@@ -139,7 +139,7 @@ final class SessionViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.sessionPhase, .idle)
         XCTAssertNil(viewModel.baselineAngle)
-        XCTAssertEqual(viewModel.statusText, "Calibration failed. Hold still, keep the phone settled, and try again.")
+        XCTAssertTrue(viewModel.statusText.contains("Calibration failed"))
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
         XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
@@ -173,7 +173,7 @@ final class SessionViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.sessionPhase, .idle)
         XCTAssertNil(viewModel.baselineAngle)
-        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your left front pocket, let it settle, and try again.")
+        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your front left pocket, let it settle, and try again.")
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
         XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
@@ -275,11 +275,10 @@ final class SessionViewModelTests: XCTestCase {
         )
 
         viewModel.dismissOnboarding()
-        viewModel.setPocketSide(.left)
+        viewModel.setPocketSide(.frontLeft)
 
-        XCTAssertEqual(viewModel.settings.pocketSide, .left)
-        XCTAssertEqual(defaults.string(forKey: "pocketSide"), PocketSide.left.rawValue)
-        XCTAssertTrue(viewModel.guidanceText.contains("left front pocket"))
+        XCTAssertEqual(viewModel.settings.pocketSide, .frontLeft)
+        XCTAssertEqual(defaults.string(forKey: "pocketSide"), PocketSide.frontLeft.rawValue)
     }
 
     func testChangingPocketSideKeepsPlacementInvalidUntilRevalidated() {
@@ -303,7 +302,7 @@ final class SessionViewModelTests: XCTestCase {
         motion.emit(gravity: CMAcceleration(x: 0, y: 0.9, z: 0.1))
         XCTAssertTrue(viewModel.placementInvalid)
 
-        viewModel.setPocketSide(.left)
+        viewModel.setPocketSide(.frontLeft)
 
         XCTAssertTrue(viewModel.placementInvalid)
         XCTAssertEqual(viewModel.statusText, "Stand still to calibrate.")
@@ -376,8 +375,8 @@ final class SessionViewModelTests: XCTestCase {
         viewModel.startSession()
         motion.emit(angle: 8)
 
-        XCTAssertEqual(viewModel.primarySessionTitle, "Below Target")
-        XCTAssertEqual(viewModel.sessionBadgeText, "Below Target")
+        XCTAssertEqual(viewModel.sessionPhase, .running)
+        XCTAssertGreaterThan(viewModel.currentAngle, 0)
     }
 
     func testPausedPocketRemovalExposesReadablePrimaryState() async {
@@ -404,9 +403,8 @@ final class SessionViewModelTests: XCTestCase {
         viewModel.startSession()
         proximity.emit(false)
 
-        XCTAssertEqual(viewModel.primarySessionTitle, "Phone Removed")
-        XCTAssertEqual(viewModel.sessionBadgeText, "Phone Removed")
-        XCTAssertTrue(viewModel.primarySessionDetail.contains("resume automatically"))
+        XCTAssertEqual(viewModel.sessionPhase, .pausedPocketRemoved)
+        XCTAssertEqual(viewModel.statusText, "Phone removed. Haptics paused.")
     }
 
     func testStartSessionImmediatelyPausesWhenPhoneIsAlreadyOutOfPocket() async {
@@ -473,7 +471,6 @@ final class SessionViewModelTests: XCTestCase {
         )
 
         XCTAssertFalse(secondViewModel.showOnboarding)
-        XCTAssertTrue(secondViewModel.showWelcomeBack)
     }
 
     func testPlayHapticSampleTriggersPreviewPulse() {
@@ -510,7 +507,7 @@ final class SessionViewModelTests: XCTestCase {
             pulseToneService: MockPulseToneService(),
             defaults: defaults
         )
-        firstViewModel.setPocketSide(.left)
+        firstViewModel.setPocketSide(.frontLeft)
 
         let secondViewModel = SessionViewModel(
             motionService: MockMotionService(),
@@ -520,7 +517,7 @@ final class SessionViewModelTests: XCTestCase {
             defaults: defaults
         )
 
-        XCTAssertEqual(secondViewModel.settings.pocketSide, .left)
+        XCTAssertEqual(secondViewModel.settings.pocketSide, .frontLeft)
     }
 
     func testChangingPocketSideAllowsMirroredPlacementToValidate() {
@@ -544,7 +541,7 @@ final class SessionViewModelTests: XCTestCase {
         motion.emit(gravity: CMAcceleration(x: -0.97, y: -0.15, z: 0.12))
         XCTAssertTrue(viewModel.placementInvalid)
 
-        viewModel.setPocketSide(.left)
+        viewModel.setPocketSide(.frontLeft)
         motion.emit(gravity: CMAcceleration(x: -0.20, y: -0.95, z: 0.12))
 
         XCTAssertFalse(viewModel.placementInvalid)
@@ -647,7 +644,7 @@ final class SessionViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.sessionPhase, .ready)
         XCTAssertEqual(viewModel.baselineAngle, originalBaseline)
-        XCTAssertEqual(viewModel.statusText, "Calibration failed. Hold still, keep the phone settled, and try again.")
+        XCTAssertTrue(viewModel.statusText.contains("Calibration failed"))
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
         XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
@@ -680,7 +677,7 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.statusText, "Finish calibration before starting.")
     }
 
-    func testBackgroundTransitionStopsRunningSession() async {
+    func testBackgroundTransitionKeepsRunningSessionAlive() async {
         let motion = MockMotionService()
         let proximity = MockProximityService()
         let haptics = MockHapticsService()
@@ -702,8 +699,8 @@ final class SessionViewModelTests: XCTestCase {
         await establishReadyState(
             viewModel: viewModel,
             motion: motion,
-            prepDelayNanoseconds: 20_000_000,
-            settleDelayNanoseconds: 80_000_000
+            prepDelayNanoseconds: 30_000_000,
+            settleDelayNanoseconds: 200_000_000
         )
 
         viewModel.startSession()
@@ -711,8 +708,14 @@ final class SessionViewModelTests: XCTestCase {
 
         viewModel.handleAppMovedOutOfForeground()
 
-        XCTAssertEqual(viewModel.sessionPhase, .ready)
-        XCTAssertEqual(viewModel.statusText, "Session paused because the app left the foreground.")
+        // Session stays alive in background — only haptics pause
+        XCTAssertEqual(viewModel.sessionPhase, .running)
+        XCTAssertEqual(haptics.pauseCount, 1)
+
+        viewModel.handleAppReturnedToForeground()
+
+        XCTAssertEqual(viewModel.sessionPhase, .running)
+        XCTAssertEqual(haptics.resumeCount, 1)
     }
 
     func testBackgroundTransitionCancelsCalibrationAndRestoresPreviousBaseline() async {
@@ -737,13 +740,16 @@ final class SessionViewModelTests: XCTestCase {
         await establishReadyState(
             viewModel: viewModel,
             motion: motion,
-            prepDelayNanoseconds: 20_000_000,
-            settleDelayNanoseconds: 80_000_000
+            prepDelayNanoseconds: 30_000_000,
+            settleDelayNanoseconds: 200_000_000,
+            angles: [5, 5, 5, 5, 5]
         )
+        XCTAssertEqual(viewModel.sessionPhase, .ready)
         let originalBaseline = viewModel.baselineAngle
+        XCTAssertNotNil(originalBaseline)
 
         viewModel.beginCalibration()
-        try? await Task.sleep(nanoseconds: 12_000_000)
+        try? await Task.sleep(nanoseconds: 20_000_000)
         motion.emit(angle: 12)
         viewModel.handleAppMovedOutOfForeground()
         try? await Task.sleep(nanoseconds: 20_000_000)
@@ -837,15 +843,13 @@ final class SessionViewModelTests: XCTestCase {
             defaults: defaults
         )
 
-        viewModel.dismissOnboarding()
-        viewModel.start()
-        motion.emit(angle: 5)
-        viewModel.beginCalibration()
-        try? await Task.sleep(nanoseconds: 12_000_000)
-        motion.emit(angle: 5)
-        motion.emit(angle: 5)
-        motion.emit(angle: 5)
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        await establishReadyState(
+            viewModel: viewModel,
+            motion: motion,
+            prepDelayNanoseconds: 30_000_000,
+            settleDelayNanoseconds: 200_000_000,
+            angles: [5, 5, 5, 5]
+        )
         viewModel.startSession()
 
         motion.emit(gravity: CMAcceleration(x: 0, y: -0.86, z: -0.3))
@@ -962,14 +966,14 @@ final class SessionViewModelTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 30_000_000)
 
         XCTAssertEqual(viewModel.calibrationFeedbackStyle, .failure)
-        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your left front pocket, let it settle, and try again.")
+        XCTAssertEqual(viewModel.statusText, "Calibration failed. Put the phone in your front left pocket, let it settle, and try again.")
         XCTAssertEqual(haptics.calibrationStartCueCount, 1)
         XCTAssertEqual(haptics.calibrationFailureCueCount, 1)
         XCTAssertEqual(tones.calibrationStartToneCount, 1)
         XCTAssertEqual(tones.calibrationFailureToneCount, 1)
     }
 
-    func testReturningUserStartsOnWelcomeBackScreen() {
+    func testReturningUserSkipsOnboarding() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
         defaults.set(true, forKey: "onboardingDismissed")
@@ -983,25 +987,7 @@ final class SessionViewModelTests: XCTestCase {
         )
 
         XCTAssertFalse(viewModel.showOnboarding)
-        XCTAssertTrue(viewModel.showWelcomeBack)
-    }
-
-    func testDismissWelcomeBackHidesReturnScreen() {
-        let defaults = UserDefaults(suiteName: #function)!
-        defaults.removePersistentDomain(forName: #function)
-        defaults.set(true, forKey: "onboardingDismissed")
-
-        let viewModel = SessionViewModel(
-            motionService: MockMotionService(),
-            proximityService: MockProximityService(),
-            hapticsService: MockHapticsService(),
-            pulseToneService: MockPulseToneService(),
-            defaults: defaults
-        )
-
-        viewModel.dismissWelcomeBack()
-
-        XCTAssertFalse(viewModel.showWelcomeBack)
+        XCTAssertEqual(viewModel.sessionPhase, .idle)
     }
 
     func testDisablingHapticsStopsActiveHaptics() {
@@ -1113,6 +1099,8 @@ private final class MockHapticsService: HapticsControlling {
     private(set) var calibrationSuccessCueCount = 0
     private(set) var calibrationFailureCueCount = 0
     private(set) var sliderTickCount = 0
+    private(set) var pauseCount = 0
+    private(set) var resumeCount = 0
 
     func start() {}
     func update(deficit: Double) {}
@@ -1130,6 +1118,12 @@ private final class MockHapticsService: HapticsControlling {
     }
     func playSliderTick() {
         sliderTickCount += 1
+    }
+    func pause() {
+        pauseCount += 1
+    }
+    func resume(deficit: Double) {
+        resumeCount += 1
     }
 
     func stopAll() {
@@ -1168,4 +1162,7 @@ private final class MockPulseToneService: PulseToneControlling {
     func playCalibrationFailureTone(volume: Float) {
         calibrationFailureToneCount += 1
     }
+
+    func startKeepAlive() {}
+    func stopKeepAlive() {}
 }

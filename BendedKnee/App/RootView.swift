@@ -5,39 +5,38 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        Group {
+        ZStack {
             if viewModel.showOnboarding {
                 OnboardingView {
                     viewModel.dismissOnboarding()
                 }
-            } else if viewModel.showWelcomeBack {
-                WelcomeBackView(dismiss: viewModel.dismissWelcomeBack)
+                .transition(.opacity)
             } else if viewModel.sessionPhase == .running || viewModel.sessionPhase == .pausedPocketRemoved {
                 SessionView(viewModel: viewModel)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.3)))
             } else {
                 HomeView(viewModel: viewModel)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.3)))
             }
         }
+        .animation(.easeInOut(duration: 0.35), value: viewModel.showOnboarding)
+        .animation(.easeInOut(duration: 0.30), value: viewModel.sessionPhase == .running || viewModel.sessionPhase == .pausedPocketRemoved)
         .task {
-            if scenePhase == .active && !viewModel.showOnboarding && !viewModel.showWelcomeBack {
+            if scenePhase == .active && !viewModel.showOnboarding {
                 viewModel.start()
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active && !viewModel.showOnboarding && !viewModel.showWelcomeBack {
+            if newPhase == .active && !viewModel.showOnboarding {
                 viewModel.start()
+                viewModel.handleAppReturnedToForeground()
             }
             if newPhase == .background {
                 viewModel.handleAppMovedOutOfForeground()
             }
         }
         .onChange(of: viewModel.showOnboarding) { _, isShowingOnboarding in
-            if !isShowingOnboarding && !viewModel.showWelcomeBack && scenePhase == .active {
-                viewModel.start()
-            }
-        }
-        .onChange(of: viewModel.showWelcomeBack) { _, isShowingWelcomeBack in
-            if !isShowingWelcomeBack && !viewModel.showOnboarding && scenePhase == .active {
+            if !isShowingOnboarding && scenePhase == .active {
                 viewModel.start()
             }
         }

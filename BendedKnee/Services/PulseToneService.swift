@@ -7,89 +7,146 @@ protocol PulseToneControlling {
     func playCalibrationStartTone(volume: Float)
     func playCalibrationSuccessTone(volume: Float)
     func playCalibrationFailureTone(volume: Float)
+    func startKeepAlive()
+    func stopKeepAlive()
     func stop()
 }
 
 final class PulseToneService: PulseToneControlling {
     private var player: AVAudioPlayer?
+    private var keepAlivePlayer: AVAudioPlayer?
+    private var keepAliveTimer: Timer?
+    private var interruptionObserver: NSObjectProtocol?
 
     init() {
         configureAudioSession()
+        observeInterruptions()
     }
+
+    deinit {
+        if let interruptionObserver {
+            NotificationCenter.default.removeObserver(interruptionObserver)
+        }
+    }
+
+    // Pentatonic notes — all from C major chord, sound good in any order
+    private static let gentleFreq: Double = 523.25  // C5
+    private static let mediumFreq: Double = 659.25  // E5
+    private static let strongFreq: Double = 783.99  // G5
 
     func playPulseTone(zone: HapticZone, volume: Float) {
         guard volume > 0, zone != .none else { return }
-        let frequency: Double
-        let duration: Double
         switch zone {
         case .none:
             return
         case .gentle:
-            frequency = 520   // soft mid-tone
-            duration = 0.08
+            playTone(frequency: Self.gentleFreq, duration: 0.10, volume: volume)
         case .medium:
-            frequency = 680   // higher urgency
-            duration = 0.10
+            playTone(frequency: Self.mediumFreq, duration: 0.12, volume: volume)
         case .strong:
-            frequency = 880   // sharp high alert
-            duration = 0.12
+            playTone(frequency: Self.strongFreq, duration: 0.14, volume: volume)
         }
-        playTone(frequency: frequency, duration: duration, volume: volume)
     }
 
     func playTestTone(volume: Float) {
         guard volume > 0 else { return }
-        playTone(frequency: 680, duration: 0.15, volume: volume)
+        // Play gentle → medium → strong in quick succession so user hears the musical relationship
+        playTone(frequency: Self.gentleFreq, duration: 0.10, volume: volume)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+            self?.playTone(frequency: Self.mediumFreq, duration: 0.12, volume: volume)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.56) { [weak self] in
+            self?.playTone(frequency: Self.strongFreq, duration: 0.14, volume: volume)
+        }
     }
 
     func playCalibrationStartTone(volume: Float) {
         guard volume > 0 else { return }
-        playTone(frequency: 560, duration: 0.14, volume: volume)
+        // Single warm note — capture has begun
+        playTone(frequency: Self.gentleFreq, duration: 0.18, volume: volume)
     }
 
     func playCalibrationSuccessTone(volume: Float) {
         guard volume > 0 else { return }
-        playTone(frequency: 740, duration: 0.12, volume: volume)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { [weak self] in
-            self?.playTone(frequency: 920, duration: 0.14, volume: volume)
+        // Rising perfect fifth (C5 → G5) — sounds like arrival
+        playTone(frequency: Self.gentleFreq, duration: 0.14, volume: volume)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) { [weak self] in
+            self?.playTone(frequency: Self.strongFreq, duration: 0.18, volume: volume)
         }
     }
 
     func playCalibrationFailureTone(volume: Float) {
         guard volume > 0 else { return }
-        playTone(frequency: 520, duration: 0.10, volume: volume)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            self?.playTone(frequency: 460, duration: 0.10, volume: volume)
+        // Descending minor second (E5 → Eb5) — gentle disappointment
+        playTone(frequency: Self.mediumFreq, duration: 0.12, volume: volume)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { [weak self] in
+            self?.playTone(frequency: 622.25, duration: 0.14, volume: volume) // Eb5
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { [weak self] in
-            self?.playTone(frequency: 390, duration: 0.12, volume: volume)
+    }
+
+    func startKeepAlive() {
+        guard keepAliveTimer == nil else { return }
+        playKeepAlivePulse()
+        let timer = Timer(timeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.playKeepAlivePulse()
         }
+        keepAliveTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    func stopKeepAlive() {
+        keepAliveTimer?.invalidate()
+        keepAliveTimer = nil
+        keepAlivePlayer?.stop()
+        keepAlivePlayer = nil
     }
 
     func stop() {
         player?.stop()
         player = nil
+        stopKeepAlive()
+    }
+
+    private func playKeepAlivePulse() {
+        let sampleRate: Double = 44100
+        let duration: Double = 0.5
+        let sampleCount = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: sampleCount)
+        for i in 0..<sampleCount {
+            let t = Double(i) / sampleRate
+            samples[i] = Float(sin(2.0 * .pi * 440.0 * t))
+        }
+        guard let data = wavData(samples: samples, sampleRate: Int(sampleRate)) else { return }
+        do {
+            let newPlayer = try AVAudioPlayer(data: data)
+            newPlayer.volume = 0.001
+            newPlayer.prepareToPlay()
+            newPlayer.play()
+            keepAlivePlayer = newPlayer
+        } catch {}
     }
 
     private func playTone(frequency: Double, duration: Double, volume: Float) {
         let sampleRate: Double = 44100
         let sampleCount = Int(sampleRate * duration)
-        let fadeOutSamples = min(sampleCount / 4, Int(sampleRate * 0.02))
+        let attackSamples = Int(sampleRate * 0.005) // 5ms soft attack
+        let decayStart = Int(Double(sampleCount) * 0.3) // decay begins at 30% of duration
 
         var samples = [Float](repeating: 0, count: sampleCount)
         for i in 0..<sampleCount {
             let t = Double(i) / sampleRate
-            var sample = Float(sin(2.0 * .pi * frequency * t))
+            // Fundamental + soft second harmonic for warmth
+            var sample = Float(sin(2.0 * .pi * frequency * t) * 0.85 + sin(2.0 * .pi * frequency * 2.0 * t) * 0.15)
 
-            // Fade in first 1ms
-            let fadeInSamples = min(44, sampleCount)
-            if i < fadeInSamples {
-                sample *= Float(i) / Float(fadeInSamples)
+            // Soft attack (5ms fade in)
+            if i < attackSamples {
+                let attackProgress = Double(i) / Double(attackSamples)
+                sample *= Float(attackProgress * attackProgress) // quadratic ease-in
             }
-            // Fade out
-            let fadeStart = sampleCount - fadeOutSamples
-            if i >= fadeStart {
-                sample *= Float(sampleCount - i) / Float(fadeOutSamples)
+            // Exponential decay after 30%
+            if i >= decayStart {
+                let decayProgress = Double(i - decayStart) / Double(sampleCount - decayStart)
+                sample *= Float(exp(-3.0 * decayProgress)) // natural exponential decay
             }
 
             samples[i] = sample
@@ -155,6 +212,25 @@ final class PulseToneService: PulseToneControlling {
             // Silent — audio is supplementary
         }
     }
+
+    private func observeInterruptions() {
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            guard let info = notification.userInfo,
+                  let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+                  let type = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+
+            if type == .ended {
+                try? AVAudioSession.sharedInstance().setActive(true)
+                if self?.keepAliveTimer != nil {
+                    self?.playKeepAlivePulse()
+                }
+            }
+        }
+    }
 }
 
 final class NoOpPulseToneService: PulseToneControlling {
@@ -163,5 +239,7 @@ final class NoOpPulseToneService: PulseToneControlling {
     func playCalibrationStartTone(volume: Float) {}
     func playCalibrationSuccessTone(volume: Float) {}
     func playCalibrationFailureTone(volume: Float) {}
+    func startKeepAlive() {}
+    func stopKeepAlive() {}
     func stop() {}
 }

@@ -10,9 +10,7 @@ final class BendedKneeUITests: XCTestCase {
 
         advanceOnboarding(in: app)
         XCTAssertTrue(app.buttons["calibrateButton"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.sliders["targetSlider"].exists)
-        XCTAssertTrue(app.switches["hapticsToggle"].exists)
-        XCTAssertTrue(app.sliders["volumeSlider"].exists)
+        XCTAssertTrue(app.buttons["settingsGearButton"].exists)
     }
 
     func testCalibrationEnablesSessionStart() {
@@ -39,28 +37,18 @@ final class BendedKneeUITests: XCTestCase {
         XCTAssertTrue(app.buttons["endSessionButton"].exists)
     }
 
-    func testSetupExposesHapticsAndAudioControls() {
+    func testTuningDrawerExposesHapticsAndAudioControls() {
         let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
 
         advanceOnboarding(in: app)
+        let gearButton = app.buttons["settingsGearButton"]
+        XCTAssertTrue(gearButton.waitForExistence(timeout: 2))
+        tap(gearButton, in: app)
+
         XCTAssertTrue(app.switches["hapticsToggle"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["testSoundButton"].waitForExistence(timeout: 2))
-    }
-
-    func testSkatingSetupDisclosureRevealsPlacementGuidance() {
-        let app = launchApp(arguments: ["UITESTING", "FAST_CALIBRATION"])
-
-        advanceOnboarding(in: app)
-        let disclosure = app.buttons["skatingSetupDisclosure"]
-        XCTAssertTrue(disclosure.waitForExistence(timeout: 2))
-
-        let placementHeading = app.staticTexts["Placement"]
-        if !placementHeading.exists {
-            tap(disclosure, in: app)
-        }
-
-        XCTAssertTrue(placementHeading.waitForExistence(timeout: 2))
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Keep the phone top-up.'")).firstMatch.exists)
+        XCTAssertTrue(app.buttons["testSoundButton"].exists)
+        XCTAssertTrue(app.sliders["targetSlider"].exists)
+        XCTAssertTrue(app.sliders["volumeSlider"].exists)
     }
 
     func testFirstLaunchStartsInFullScreenOnboarding() {
@@ -74,7 +62,7 @@ final class BendedKneeUITests: XCTestCase {
         let app = launchApp(arguments: ["UITESTING", "SHOW_SPLASH", "FAST_CALIBRATION"])
 
         XCTAssertFalse(app.buttons["onboardingNextButton"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["onboardingNextButton"].waitForExistence(timeout: 5))
     }
 
     func testCalibrationFailureShowsHelpfulMessage() {
@@ -104,15 +92,14 @@ final class BendedKneeUITests: XCTestCase {
         tap(startButton, in: app)
 
         XCTAssertTrue(app.staticTexts["Phone Removed"].waitForExistence(timeout: 6))
-        XCTAssertTrue(app.staticTexts["Return the phone to your front pocket to resume haptic coaching."].exists)
+        XCTAssertTrue(app.staticTexts["Return the phone to your pocket to resume."].exists)
     }
 
-    func testReturningUserSeesWelcomeBackScreen() {
+    func testReturningUserGoesDirectlyToHomeScreen() {
         let app = launchApp(arguments: ["UITESTING", "RETURNING_USER"])
 
-        XCTAssertTrue(app.buttons["welcomeBackContinueButton"].waitForExistence(timeout: 2))
-        tap(app.buttons["welcomeBackContinueButton"], in: app)
         XCTAssertTrue(app.buttons["calibrateButton"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.buttons["onboardingNextButton"].exists)
     }
 
     private func advanceOnboarding(in app: XCUIApplication) {
@@ -149,7 +136,7 @@ final class BendedKneeUITests: XCTestCase {
             "startSessionButton",
             "testSoundButton",
             "skatingSetupDisclosure",
-            "welcomeBackContinueButton"
+            "settingsGearButton"
         ]
         if directTapIdentifiers.contains(element.identifier) {
             element.tap()

@@ -3,199 +3,134 @@ import SwiftUI
 struct SessionView: View {
     @ObservedObject var viewModel: SessionViewModel
 
+    private var zone: HapticZone {
+        HapticZone.zone(for: max(0, viewModel.settings.targetAngle - viewModel.currentAngle))
+    }
+
+    private var isPaused: Bool {
+        viewModel.sessionPhase == .pausedPocketRemoved
+    }
+
     var body: some View {
         GeometryReader { geometry in
-            let angleFontSize: CGFloat = min(104, geometry.size.width * 0.22)
-            let contentWidth = min(geometry.size.width - 22, 520)
+            let gaugeSize = min(geometry.size.width * 0.78, 340)
+            let numberSize = min(geometry.size.width * 0.38, 160)
 
             ZStack {
-                PosterBackdrop(style: .session).ignoresSafeArea()
+                // 1.4: Near-black background with subtle plum glow
+                Color(red: 0.03, green: 0.03, blue: 0.05)
+                    .ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 18) {
-                        VStack(spacing: 10) {
-                            HStack {
-                                Text(AppBrand.name)
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color.white.opacity(0.70))
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.28, green: 0.08, blue: 0.22).opacity(0.30),
+                        Color.clear
+                    ],
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: geometry.size.height * 0.6
+                )
+                .ignoresSafeArea()
 
-                                Spacer()
-                            }
+                VStack(spacing: 0) {
+                    // Top bar: brand + state badge
+                    HStack {
+                        Text(AppBrand.name)
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.white.opacity(0.45))
 
-                            stateBadge
+                        Spacer()
 
-                            Text(viewModel.currentAngleText)
-                                .font(.system(size: angleFontSize, weight: .black, design: .rounded))
-                                .foregroundStyle(angleColor)
-                                .monospacedDigit()
-                                .minimumScaleFactor(0.55)
-                                .opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.18 : 1)
-                                .accessibilityIdentifier("sessionAngleText")
-                                .frame(maxWidth: .infinity)
+                        stateBadge
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, geometry.safeAreaInsets.top + 4)
 
-                            Text("Target \(viewModel.targetAngleText)")
-                                .font(.system(size: 26, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.24 : 0.75))
-                        }
+                    Spacer()
 
-                        progressPanel
+                    // Center: the arc gauge with neon number
+                    ArcGaugeView(
+                        currentAngle: viewModel.currentAngle,
+                        targetAngle: viewModel.settings.targetAngle,
+                        zone: zone,
+                        isPaused: isPaused,
+                        numberSize: numberSize,
+                        arcDiameter: gaugeSize
+                    )
 
-                        if viewModel.sessionPhase == .pausedPocketRemoved {
-                            pausedBanner
-                        }
+                    Spacer()
 
-                        Text(viewModel.primarySessionTitle)
-                            .font(.system(size: 24, weight: .heavy, design: .rounded))
-                            .foregroundStyle(viewModel.sessionPhase == .pausedPocketRemoved ? .white : angleColor)
+                    // Status label — one line, zone color
+                    if isPaused {
+                        pausedSection
+                    } else {
+                        Text(zone.label)
+                            .font(.system(size: 20, weight: .heavy, design: .rounded))
+                            .foregroundStyle(zoneColor)
                             .accessibilityIdentifier("sessionStatusText")
 
-                        Text(viewModel.primarySessionDetail)
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.92 : 0.78))
-                            .padding(.horizontal, 18)
-
-                        Text("Need a new target? End the session and change it in setup before skating again.")
+                        Text("Coaching continues even if the screen locks.")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(Color.white.opacity(0.62))
-                            .padding(.horizontal, 24)
-
-                        Button(action: viewModel.stopSession) {
-                            Text("End Session")
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.white.opacity(0.14))
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        }
-                        .accessibilityIdentifier("endSessionButton")
-
-                        Spacer(minLength: 12)
+                            .foregroundStyle(Color.white.opacity(0.40))
+                            .padding(.top, 4)
                     }
-                    .frame(maxWidth: contentWidth)
-                    .padding(.horizontal, 12)
-                    .padding(.top, max(geometry.safeAreaInsets.top, 10) + 8)
-                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 16) + 12)
-                    .frame(maxWidth: .infinity)
+
+                    Spacer()
+
+                    // End session button — low contrast, bottom
+                    Button(action: viewModel.stopSession) {
+                        Text("End Session")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .frame(maxWidth: 200)
+                            .padding(.vertical, 12)
+                            .background(Color.white.opacity(0.08))
+                            .foregroundStyle(Color.white.opacity(0.50))
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                    .accessibilityIdentifier("endSessionButton")
+                    .padding(.bottom, geometry.safeAreaInsets.bottom + 8)
                 }
             }
         }
+        .ignoresSafeArea()
     }
 
-    private var angleColor: Color {
-        if viewModel.sessionPhase == .pausedPocketRemoved {
-            return Color.white.opacity(0.55)
+    private var zoneColor: Color {
+        if isPaused { return Color.white.opacity(0.55) }
+        switch zone {
+        case .none:   return Color(red: 1.0, green: 0.84, blue: 0.31)
+        case .gentle: return Color(red: 0.99, green: 0.95, blue: 0.84)
+        case .medium: return Color(red: 1.0, green: 0.42, blue: 0.29)
+        case .strong: return Color(red: 0.94, green: 0.22, blue: 0.14)
         }
-
-        let deficit = max(0, viewModel.settings.targetAngle - viewModel.currentAngle)
-        switch HapticZone.zone(for: deficit) {
-        case .none:
-            return AppTheme.success
-        case .gentle:
-            return AppTheme.warning
-        case .medium:
-            return AppTheme.accent
-        case .strong:
-            return AppTheme.danger
-        }
-    }
-
-    private var progressPanel: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(viewModel.sessionPhase == .pausedPocketRemoved ? "Session Paused" : "Target Progress")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.72))
-                Spacer()
-                Text(viewModel.sessionPhase == .pausedPocketRemoved ? "WAITING" : "\(Int((viewModel.targetProgress * 100).rounded()))%")
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.white)
-            }
-
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.white.opacity(0.10))
-                    Capsule()
-                        .fill(angleColor)
-                        .frame(width: max(24, proxy.size.width * max(viewModel.targetProgress, viewModel.sessionPhase == .pausedPocketRemoved ? 0.12 : 0)))
-                }
-            }
-            .frame(height: 12)
-
-            Text(viewModel.sessionPhase == .pausedPocketRemoved ? "Return the phone to your front pocket to resume coaching." : "This session view stays awake so motion tracking and haptics remain active.")
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.72))
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.white.opacity(viewModel.sessionPhase == .pausedPocketRemoved ? 0.10 : 0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                )
-        )
     }
 
     private var stateBadge: some View {
-        HStack(spacing: 8) {
-            Image(systemName: viewModel.sessionBadgeSymbol)
-                .font(.system(size: 13, weight: .bold))
-            Text(viewModel.sessionBadgeText)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+        HStack(spacing: 6) {
+            Circle()
+                .fill(isPaused ? Color.white.opacity(0.40) : zoneColor)
+                .frame(width: 8, height: 8)
+            Text(isPaused ? "Paused" : (viewModel.targetProgress >= 1 ? "On Target" : "Coaching"))
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.60))
         }
-        .accessibilityElement(children: .combine)
-        .foregroundStyle(sessionBadgeForeground)
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Capsule().fill(sessionBadgeBackground))
+        .padding(.vertical, 6)
+        .background(Capsule().fill(Color.white.opacity(0.08)))
         .accessibilityIdentifier("sessionStateBadge")
     }
 
-    private var pausedBanner: some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private var pausedSection: some View {
+        VStack(spacing: 8) {
             Text("Phone Removed")
-                .font(.system(size: 22, weight: .black, design: .rounded))
-                .foregroundStyle(.white)
-            Text("Return the phone to your front pocket to resume haptic coaching.")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.86))
+                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.70))
+                .accessibilityIdentifier("sessionStatusText")
+
+            Text("Return the phone to your pocket to resume.")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.45))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.14))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.white.opacity(0.20), lineWidth: 1)
-                )
-        )
         .accessibilityIdentifier("pausedPocketRemovedBanner")
-    }
-
-    private var sessionBadgeForeground: Color {
-        switch viewModel.sessionPhase {
-        case .pausedPocketRemoved:
-            return .white
-        case .running:
-            return viewModel.targetProgress >= 1 ? AppTheme.success : AppTheme.warning
-        default:
-            return .white
-        }
-    }
-
-    private var sessionBadgeBackground: Color {
-        switch viewModel.sessionPhase {
-        case .pausedPocketRemoved:
-            return Color.white.opacity(0.14)
-        case .running:
-            return (viewModel.targetProgress >= 1 ? AppTheme.success : AppTheme.warning).opacity(0.18)
-        default:
-            return Color.white.opacity(0.10)
-        }
     }
 }

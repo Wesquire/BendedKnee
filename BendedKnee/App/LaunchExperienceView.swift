@@ -33,44 +33,45 @@ struct LaunchExperienceView: View {
 }
 
 struct SplashView: View {
+    @State private var iconScale: CGFloat = 0.82
+    @State private var nameOpacity: Double = 0
+
     var body: some View {
         GeometryReader { geometry in
-            let contentWidth = min(geometry.size.width - 32, 460)
-            let brandIconSize = min(max(geometry.size.width * 0.28, 110), 154)
-            let titleSize = min(max(geometry.size.width * 0.10, 32), 48)
+            let iconSize = min(max(geometry.size.width * 0.32, 120), 170)
+            let titleSize = min(max(geometry.size.width * 0.11, 36), 50)
 
             ZStack {
                 PosterBackdrop(style: .warm).ignoresSafeArea()
 
-                VStack(spacing: max(20, geometry.size.height * 0.026)) {
+                VStack(spacing: 18) {
                     Spacer()
 
-                    DropBrandMark(
-                        iconSize: brandIconSize,
-                        titleSize: titleSize,
-                        subtitle: AppBrand.tagline
-                    )
+                    DropIcon(size: iconSize)
+                        .scaleEffect(iconScale)
 
-                    Text("Pocket coach for deeper knee bend")
-                        .font(AppType.posterTitle(18))
+                    Text(AppBrand.name)
+                        .font(.system(size: titleSize, weight: .black, design: .rounded))
+                        .tracking(2.0)
                         .foregroundStyle(AppTheme.deepInk)
-                        .textCase(.uppercase)
-                        .multilineTextAlignment(.center)
-                        .accessibilityIdentifier("splashTagline")
+                        .opacity(nameOpacity)
 
-                    Text("Left pocket. Big posture coaching. Vibrations and pulse audio that hit faster.")
-                        .font(AppType.label(13, weight: .semibold))
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(AppTheme.deepInk.opacity(0.84))
-                        .frame(maxWidth: contentWidth - 24)
+                    Text(AppBrand.tagline)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.deepInk.opacity(0.65))
+                        .opacity(nameOpacity)
 
                     Spacer()
                 }
-                .frame(maxWidth: contentWidth)
-                .padding(.horizontal, 16)
-                .padding(.top, geometry.safeAreaInsets.top + 12)
-                .padding(.bottom, geometry.safeAreaInsets.bottom + 14)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                iconScale = 1.0
+            }
+            withAnimation(.easeIn(duration: 0.5).delay(0.35)) {
+                nameOpacity = 1.0
             }
         }
         .accessibilityIdentifier("splashView")

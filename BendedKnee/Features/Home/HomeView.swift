@@ -2,314 +2,311 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: SessionViewModel
-    @State private var showingSetupInstructions = true
+    @State private var showTuningDrawer = false
+
+    private var zone: HapticZone {
+        guard viewModel.baselineAngle != nil else { return .none }
+        return HapticZone.zone(for: max(0, viewModel.settings.targetAngle - viewModel.currentAngle))
+    }
+
+    private var isCalibrating: Bool {
+        if case .calibrating = viewModel.sessionPhase { return true }
+        return false
+    }
+
+    private var calibrationSecondsRemaining: Int? {
+        if case .calibrating(let s) = viewModel.sessionPhase { return s }
+        return nil
+    }
 
     var body: some View {
         GeometryReader { geometry in
-            let contentWidth = min(geometry.size.width - 22, 560)
+            let gaugeSize = min(geometry.size.width * 0.62, 280)
+            let numberSize = min(geometry.size.width * 0.26, 100)
 
             ZStack {
                 PosterBackdrop(style: .home).ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 20) {
-                        heroCard
-                        instructionsCard
-                        calibrationCard
-                        SettingsCard(viewModel: viewModel)
-                    }
-                    .frame(maxWidth: contentWidth)
-                    .padding(.horizontal, 11)
-                    .padding(.top, max(geometry.safeAreaInsets.top, 10) + 6)
-                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 16) + 12)
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .onAppear {
-                showingSetupInstructions = viewModel.baselineAngle == nil
-            }
-            .onChange(of: viewModel.baselineAngle) { _, newBaseline in
-                if newBaseline != nil {
-                    showingSetupInstructions = false
-                }
-            }
-        }
-    }
-
-    private var heroCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(viewModel.setupSummaryTitle.uppercased())
-                .font(AppType.label(12, weight: .bold))
-                .foregroundStyle(AppTheme.deepInk.opacity(0.72))
-                .tracking(1.6)
-
-            Text(viewModel.setupSummaryDetail)
-                .font(AppType.label(16, weight: .bold))
-                .foregroundStyle(AppTheme.ink)
-
-            if let baselineAngle = viewModel.baselineAngle {
-                Text("Your live number tracks extra bend beyond standing.")
-                    .font(AppType.label(14, weight: .semibold))
-                    .foregroundStyle(AppTheme.inkMuted)
-
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Live bend")
-                            .font(AppType.label(14, weight: .bold))
-                            .foregroundStyle(AppTheme.inkMuted)
-                        Text(viewModel.currentAngleText)
-                            .font(AppType.display(60))
-                            .minimumScaleFactor(0.52)
+                VStack(spacing: 0) {
+                    // ── Top bar ──
+                    HStack {
+                        DropIcon(size: 32)
+                        Text(AppBrand.name)
+                            .font(.system(size: 16, weight: .black, design: .rounded))
                             .foregroundStyle(AppTheme.deepInk)
-                            .accessibilityIdentifier("currentAngleText")
+                            .tracking(1.0)
+
+                        Spacer()
+
+                        Button(action: { showTuningDrawer = true }) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(AppTheme.deepInk.opacity(0.55))
+                        }
+                        .accessibilityIdentifier("settingsGearButton")
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, geometry.safeAreaInsets.top + 4)
+
+                    Spacer(minLength: 4)
+
+                    // ── Center: gauge or calibration countdown ──
+                    if isCalibrating {
+                        calibrationCountdown(gaugeSize: gaugeSize)
+                    } else {
+                        ArcGaugeView(
+                            currentAngle: viewModel.currentAngle,
+                            targetAngle: viewModel.settings.targetAngle,
+                            zone: zone,
+                            isPaused: false,
+                            numberSize: numberSize,
+                            arcDiameter: gaugeSize,
+                            strokeWidth: 3.0,
+                            showTargetLabel: false
+                        )
+                        .accessibilityIdentifier("homeArcGauge")
+                    }
+
+                    // Calibration feedback
+                    if !isCalibrating {
+                        calibrationStatusLabel
+                            .padding(.top, 8)
+                    }
+
+                    Spacer(minLength: 12)
+
+                    // ── Controls: pocket + target ──
+                    if !isCalibrating {
+                        controlsSection
+                            .padding(.horizontal, 24)
+                    }
+
+                    Spacer(minLength: 16)
+
+                    // ── Primary action ──
+                    actionButton
+                        .padding(.horizontal, 32)
+
+                    // Error text
+                    if case .unavailable(let message) = viewModel.sessionPhase {
+                        Text(message)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.danger)
+                            .padding(.top, 6)
                     }
 
                     Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("Target")
-                            .font(AppType.label(14, weight: .bold))
-                            .foregroundStyle(AppTheme.inkMuted)
-                        Text(viewModel.targetAngleText)
-                            .font(AppType.display(32))
-                            .minimumScaleFactor(0.7)
-                            .foregroundStyle(AppTheme.posterCoral)
-                    }
+                        .frame(height: geometry.safeAreaInsets.bottom + 16)
                 }
-
-                Text("Standing baseline \(Int(baselineAngle.rounded()))°. Drop coaches you when you rise too upright.")
-                    .font(AppType.label(14, weight: .medium))
-                    .foregroundStyle(AppTheme.inkMuted)
-            } else {
-                Text("Fine-tune your target, haptics, and audio below, then run a 7-second upright calibration before you skate.")
-                    .font(AppType.label(14, weight: .medium))
-                    .foregroundStyle(AppTheme.inkMuted)
             }
-
-            Text(viewModel.statusText)
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Capsule().fill(statusBackground))
-                .foregroundStyle(statusColor)
-                .accessibilityIdentifier("statusText")
-
-            Text(viewModel.guidanceText)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.inkMuted)
+            .sheet(isPresented: $showTuningDrawer) {
+                TuningDrawerView(viewModel: viewModel)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
         }
-        .padding(18)
-        .background(cardBackground(cornerRadius: 26))
-        .shadow(color: AppTheme.deepInk.opacity(0.14), radius: 20, x: 0, y: 10)
+        .ignoresSafeArea()
     }
 
-    private var instructionsCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Button(action: {
-                withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
-                    showingSetupInstructions.toggle()
-                }
-            }) {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Set-Up Instructions")
-                            .font(AppType.title(22))
-                            .foregroundStyle(AppTheme.ink)
+    // MARK: - Controls Section (Pocket + Target)
 
-                        Text("Placement and calibration guidance for every session.")
-                            .font(AppType.label(13, weight: .semibold))
-                            .foregroundStyle(AppTheme.inkMuted)
+    private var controlsSection: some View {
+        VStack(spacing: 14) {
+            // Pocket selector
+            VStack(spacing: 6) {
+                Text("POCKET")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .tracking(1.5)
+                    .foregroundStyle(AppTheme.deepInk.opacity(0.40))
+
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                    ForEach(PocketSide.allCases) { pocket in
+                        let isSelected = viewModel.settings.pocketSide == pocket && viewModel.pocketConfirmed
+                        Button(action: { viewModel.setPocketSide(pocket) }) {
+                            VStack(spacing: 2) {
+                                Text(pocket.isFront ? "Front" : "Back")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                Text(pocket.rawValue.contains("Left") ? "Left" : "Right")
+                                    .font(.system(size: 15, weight: .black, design: .rounded))
+                            }
+                            .padding(.vertical, 14)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(isSelected ? AppTheme.posterCoral : AppTheme.deepInk.opacity(0.06))
+                            )
+                            .foregroundStyle(isSelected ? .white : AppTheme.deepInk.opacity(0.65))
+                        }
+                        .accessibilityIdentifier("pocket_\(pocket.shortLabel)")
                     }
+                }
+            }
+
+            // Target slider
+            VStack(spacing: 4) {
+                HStack {
+                    Text("TARGET")
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .tracking(1.5)
+                        .foregroundStyle(AppTheme.deepInk.opacity(0.40))
 
                     Spacer()
 
-                    Image(systemName: showingSetupInstructions ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
-                        .font(.system(size: 22, weight: .bold))
+                    Text(viewModel.targetAngleText)
+                        .font(.system(size: 18, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.posterCoral)
+                        .monospacedDigit()
                 }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("skatingSetupDisclosure")
 
-            if showingSetupInstructions {
-                VStack(alignment: .leading, spacing: 14) {
-                    instructionSection(
-                        title: "Calibration",
-                        rows: [
-                            ("timer", "Tap calibrate, then put the phone in your left front pocket right away."),
-                            ("waveform.path.ecg", "Stand upright and stay still during the 7-second calibration."),
-                            ("speaker.wave.2.fill", "You will hear a confirmation sound and feel vibration when calibration finishes."),
-                            ("list.number", "Set target bend, adjust haptics and audio, calibrate upright, then start your session.")
-                        ]
-                    )
-
-                    Divider()
-                        .overlay(AppTheme.line)
-
-                    instructionSection(
-                        title: "Placement",
-                        rows: [
-                            ("figure.walk", "Use your left front pocket every time."),
-                            ("arrow.up", "Keep the phone top-up."),
-                            ("iphone", "Keep the screen facing your thigh."),
-                            ("lock.open", "Keep the app open and in the foreground while skating.")
-                        ]
-                    )
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                Slider(
+                    value: Binding(
+                        get: { viewModel.settings.targetAngle },
+                        set: { viewModel.setTargetAngle($0) }
+                    ),
+                    in: AppSettings.targetRange,
+                    step: 1
+                )
+                .tint(AppTheme.posterCoral)
+                .accessibilityIdentifier("targetSlider")
             }
         }
-        .padding(18)
-        .background(cardBackground(cornerRadius: 24, fill: AppTheme.panelSecondary))
-        .shadow(color: AppTheme.deepInk.opacity(0.10), radius: 16, x: 0, y: 8)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.55))
+                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+        )
     }
 
-    private var calibrationCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(viewModel.setupStepTitle)
-                .font(AppType.title(24))
-                .foregroundStyle(AppTheme.ink)
+    // MARK: - Calibration Countdown
 
-            Text("Tap calibrate, place the phone in your left front pocket, then stand upright and still. Calibration takes 7 seconds total, and you will hear a confirmation sound and feel vibration when it completes.")
-                .font(AppType.label(15, weight: .medium))
-                .foregroundStyle(AppTheme.inkMuted)
+    @ViewBuilder
+    private func calibrationCountdown(gaugeSize: CGFloat) -> some View {
+        let seconds = calibrationSecondsRemaining ?? 0
+        let isPreparing = viewModel.calibrationStage == .preparing
 
-            if viewModel.shouldShowPlacementWarning {
-                Label("Phone placement looks off. Keep it top-up with the screen against your thigh before you continue.", systemImage: "exclamationmark.triangle.fill")
-                    .font(AppType.label(13, weight: .bold))
-                    .foregroundStyle(AppTheme.danger)
-                    .padding(14)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(AppTheme.danger.opacity(0.10))
-                    )
-            }
+        ZStack {
+            ArcShape(progress: 1.0)
+                .stroke(Color.white.opacity(0.12), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .frame(width: gaugeSize, height: gaugeSize)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(viewModel.calibrationBannerTitle)
-                    .font(AppType.label(14, weight: .bold))
-                    .foregroundStyle(AppTheme.ink)
+            ArcShape(progress: isPreparing ? 0.0 : 0.5)
+                .stroke(
+                    isPreparing ? AppTheme.posterGold : AppTheme.posterTeal,
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                )
+                .frame(width: gaugeSize, height: gaugeSize)
+                .shadow(color: (isPreparing ? AppTheme.posterGold : AppTheme.posterTeal).opacity(0.4), radius: 8)
 
-                if !viewModel.calibrationBannerDetail.isEmpty {
-                    Text(viewModel.calibrationBannerDetail)
-                        .font(AppType.label(13, weight: .medium))
-                        .foregroundStyle(AppTheme.inkMuted)
-                }
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(calibrationBannerBackground)
-            )
+            VStack(spacing: 8) {
+                Text("\(seconds)")
+                    .font(.system(size: gaugeSize * 0.35, weight: .black, design: .rounded))
+                    .foregroundStyle(isPreparing ? AppTheme.posterGold : AppTheme.posterTeal)
+                    .monospacedDigit()
 
-            if case .calibrating(let secondsRemaining) = viewModel.sessionPhase {
-                HStack(spacing: 10) {
-                    Image(systemName: viewModel.calibrationStage == .preparing ? "timer" : "dot.radiowaves.left.and.right")
-                    Text(viewModel.calibrationStage == .preparing ? "Get Ready: \(secondsRemaining)" : "Calibrating: \(secondsRemaining)")
-                }
-                .font(.system(size: 17, weight: .heavy, design: .rounded))
-                .foregroundStyle(AppTheme.posterCoral)
-            }
-
-            Button(action: viewModel.beginCalibration) {
-                Text(viewModel.baselineAngle == nil ? "Calibrate Standing Position" : "Recalibrate Standing Position")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(AppTheme.posterCoral)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            }
-            .buttonStyle(PrimaryFilledButtonStyle())
-            .disabled(isUnavailable)
-            .opacity(isUnavailable ? 0.4 : 1)
-            .accessibilityIdentifier("calibrateButton")
-
-            Text(viewModel.startSessionHelperText)
-                .font(AppType.label(13, weight: .semibold))
-                .foregroundStyle(viewModel.placementInvalid ? AppTheme.danger : AppTheme.inkMuted)
-
-            Button(action: viewModel.startSession) {
-                Text("Start Session")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(AppTheme.deepInk)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            }
-            .buttonStyle(PrimaryFilledButtonStyle())
-            .disabled(!viewModel.canStartSession)
-            .opacity(viewModel.canStartSession ? 1 : 0.4)
-            .accessibilityIdentifier("startSessionButton")
-        }
-        .padding(18)
-        .background(cardBackground(cornerRadius: 24, fill: AppTheme.panelSecondary))
-        .shadow(color: AppTheme.deepInk.opacity(0.10), radius: 16, x: 0, y: 8)
-    }
-
-    private func instructionSection(title: String, rows: [(String, String)]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(AppType.label(13, weight: .bold))
-                .foregroundStyle(AppTheme.inkMuted)
-
-            ForEach(rows, id: \.1) { row in
-                Label(row.1, systemImage: row.0)
-                    .font(AppType.label(14, weight: .medium))
-                    .foregroundStyle(AppTheme.ink)
+                Text(isPreparing ? "POCKET THE PHONE" : "HOLD STILL")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .tracking(1.5)
+                    .foregroundStyle(AppTheme.deepInk.opacity(0.60))
             }
         }
+        .accessibilityIdentifier("calibrationCountdown")
     }
 
-    private func cardBackground(cornerRadius: CGFloat, fill: Color = AppTheme.panel) -> some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(fill)
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.76), lineWidth: 2)
-            )
-    }
+    // MARK: - Calibration Status Label
 
-    private var statusColor: Color {
-        switch HapticZone.zone(for: max(0, viewModel.settings.targetAngle - viewModel.currentAngle)) {
-        case .none:
-            return AppTheme.success
-        case .gentle:
-            return AppTheme.warning
-        case .medium:
-            return AppTheme.posterTeal
-        case .strong:
-            return AppTheme.danger
-        }
-    }
-
-    private var statusBackground: Color {
-        statusColor.opacity(0.14)
-    }
-
-    private var calibrationBannerBackground: Color {
+    @ViewBuilder
+    private var calibrationStatusLabel: some View {
         switch viewModel.calibrationFeedbackStyle {
         case .success:
-            return AppTheme.success.opacity(0.14)
+            Label("Baseline locked", systemImage: "checkmark.circle.fill")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.success)
         case .failure:
-            return AppTheme.danger.opacity(0.12)
-        case .capturing:
-            return AppTheme.posterTeal.opacity(0.16)
-        case .preparing:
-            return AppTheme.warning.opacity(0.16)
+            Label("Try again — hold still in your pocket", systemImage: "exclamationmark.circle.fill")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.danger)
         case .neutral:
-            return Color.white.opacity(0.66)
+            if viewModel.baselineAngle != nil {
+                EmptyView()
+            } else if !viewModel.pocketConfirmed {
+                Text("Pick a pocket, then calibrate")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.deepInk.opacity(0.45))
+            } else {
+                Text("Calibrate to begin")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.deepInk.opacity(0.45))
+            }
+        default:
+            EmptyView()
         }
     }
 
-    private var isUnavailable: Bool {
-        if case .unavailable = viewModel.sessionPhase {
-            return true
+    // MARK: - Action Button
+
+    @ViewBuilder
+    private var actionButton: some View {
+        if isCalibrating {
+            EmptyView()
+        } else if viewModel.canStartSession {
+            // Ready to skate — two buttons: primary Skate + subtle Recalibrate
+            VStack(spacing: 10) {
+                Button(action: viewModel.startSession) {
+                    Text("Skate")
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .tracking(1.0)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(AppTheme.posterGold)
+                                .shadow(color: AppTheme.posterGold.opacity(0.40), radius: 12, x: 0, y: 6)
+                        )
+                        .foregroundStyle(AppTheme.deepInk)
+                }
+                .accessibilityIdentifier("startSessionButton")
+
+                Button(action: viewModel.beginCalibration) {
+                    Text("Recalibrate")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.deepInk.opacity(0.45))
+                }
+                .accessibilityIdentifier("calibrateButton")
+            }
+        } else if viewModel.baselineAngle != nil {
+            Button(action: viewModel.beginCalibration) {
+                Text("Recalibrate")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(AppTheme.posterCoral)
+                    )
+                    .foregroundStyle(.white)
+            }
+            .accessibilityIdentifier("calibrateButton")
+        } else {
+            Button(action: viewModel.beginCalibration) {
+                Text("Calibrate")
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .tracking(1.0)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(viewModel.pocketConfirmed ? AppTheme.posterCoral : AppTheme.deepInk.opacity(0.12))
+                            .shadow(color: viewModel.pocketConfirmed ? AppTheme.posterCoral.opacity(0.35) : .clear, radius: 12, x: 0, y: 6)
+                    )
+                    .foregroundStyle(viewModel.pocketConfirmed ? .white : AppTheme.deepInk.opacity(0.30))
+            }
+            .disabled(!viewModel.pocketConfirmed || {
+                if case .unavailable = viewModel.sessionPhase { return true }
+                return false
+            }())
+            .accessibilityIdentifier("calibrateButton")
         }
-        return false
     }
 }

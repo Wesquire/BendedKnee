@@ -43,7 +43,7 @@ enum AppFactory {
             proximityService: proximityService,
             hapticsService: hapticsService,
             pulseToneService: pulseToneService,
-            calibrationPrepSeconds: fastCalibration ? 1 : 4,
+            calibrationPrepSeconds: fastCalibration ? 1 : 10,
             calibrationCaptureSeconds: fastCalibration ? 1 : 3,
             calibrationTickNanoseconds: noisyCalibration ? 200_000_000 : (fastCalibration ? 200_000_000 : 1_000_000_000),
             minimumCalibrationSamples: noisyCalibration ? 3 : (fastCalibration ? 1 : 8),

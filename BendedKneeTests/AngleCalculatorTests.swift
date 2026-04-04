@@ -10,55 +10,55 @@ final class AngleCalculatorTests: XCTestCase {
 
     func testRawAngle_uprightIsZero() {
         let gravity = CMAcceleration(x: 0, y: -1, z: 0)
-        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right), 0, accuracy: 0.01)
+        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight), 0, accuracy: 0.01)
     }
 
     func testRawAngle_45DegreeTilt() {
         let gravity = CMAcceleration(x: 0, y: -sqrt(0.5), z: sqrt(0.5))
-        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right), 45, accuracy: 0.01)
+        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight), 45, accuracy: 0.01)
     }
 
     func testRawAngle_90DegreeTilt() {
         let gravity = CMAcceleration(x: 0, y: -0.001, z: 1)
-        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right), 89.94, accuracy: 0.1)
+        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight), 89.94, accuracy: 0.1)
     }
 
     func testRawAngle_30DegreeTilt() {
         let cos30 = cos(30.0 * .pi / 180.0)
         let sin30 = sin(30.0 * .pi / 180.0)
         let gravity = CMAcceleration(x: 0, y: -cos30, z: sin30)
-        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right), 30, accuracy: 0.01)
+        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight), 30, accuracy: 0.01)
     }
 
     func testRawAngle_smallTilt() {
         let cos5 = cos(5.0 * .pi / 180.0)
         let sin5 = sin(5.0 * .pi / 180.0)
         let gravity = CMAcceleration(x: 0, y: -cos5, z: sin5)
-        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right), 5, accuracy: 0.01)
+        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight), 5, accuracy: 0.01)
     }
 
     func testBendAngle_subtractsBaseline() {
         let cos30 = cos(30.0 * .pi / 180.0)
         let sin30 = sin(30.0 * .pi / 180.0)
         let gravity = CMAcceleration(x: 0, y: -cos30, z: sin30)
-        XCTAssertEqual(estimator.bendAngleDegrees(gravity: gravity, baselineAngle: 5, pocketSide: .right), 25, accuracy: 0.01)
+        XCTAssertEqual(estimator.bendAngleDegrees(gravity: gravity, baselineAngle: 5, pocketSide: .frontRight), 25, accuracy: 0.01)
     }
 
     func testBendAngle_clampsToZero() {
         let gravity = CMAcceleration(x: 0, y: -1, z: 0)
-        XCTAssertEqual(estimator.bendAngleDegrees(gravity: gravity, baselineAngle: 10, pocketSide: .right), 0, accuracy: 0.01)
+        XCTAssertEqual(estimator.bendAngleDegrees(gravity: gravity, baselineAngle: 10, pocketSide: .frontRight), 0, accuracy: 0.01)
     }
 
     func testBendAngle_withNonZeroXComponent() {
         // Phone might have slight lateral tilt
         let gravity = CMAcceleration(x: 0.1, y: -0.9, z: 0.3)
-        let angle = estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right)
+        let angle = estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight)
         XCTAssertGreaterThan(angle, 0)
     }
 
     func testBendAngle_negativeZGravityIsRejectedByPlacementValidation() {
         let gravity = CMAcceleration(x: 0, y: -0.866, z: -0.5)
-        XCTAssertFalse(estimator.isPlacementValid(gravity: gravity, pocketSide: .right))
-        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .right), 0, accuracy: 0.01)
+        XCTAssertFalse(estimator.isPlacementValid(gravity: gravity, pocketSide: .frontRight))
+        XCTAssertEqual(estimator.rawAngleDegrees(gravity: gravity, pocketSide: .frontRight), 0, accuracy: 0.01)
     }
 }

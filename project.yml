@@ -19,10 +19,15 @@ targets:
       - path: BendedKnee/Services
         excludes:
           - AngleCalculator.swift
+      - path: BendedKnee/Resources/Assets.xcassets
     info:
       path: BendedKnee/Resources/Info.plist
+      properties:
+        UIBackgroundModes:
+          - audio
     settings:
       base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.drop.app
         PRODUCT_NAME: Drop
         PRODUCT_MODULE_NAME: BendedKnee

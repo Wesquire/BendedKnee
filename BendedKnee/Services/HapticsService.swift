@@ -10,6 +10,8 @@ protocol HapticsControlling {
     func playCalibrationSuccessCue()
     func playCalibrationFailureCue()
     func playSliderTick()
+    func pause()
+    func resume(deficit: Double)
     func stopAll()
 }
 
@@ -44,30 +46,43 @@ final class HapticsService: HapticsControlling {
 
     func playSamplePulse() {
         startEngineIfNeeded()
-        playPulse(intensity: 0.85, sharpness: 0.50, includeUIKitOverlay: true)
+        // Play gentle, then medium, then strong in quick succession so the user feels the rhythmic difference
+        playCueSequence([
+            // Gentle: single tap
+            CuePulse(delayNanoseconds: 0, intensity: 0.75, sharpness: 0.55, includeUIKitOverlay: true),
+            // Medium: double-tap
+            CuePulse(delayNanoseconds: 500_000_000, intensity: 0.90, sharpness: 0.75, includeUIKitOverlay: true),
+            CuePulse(delayNanoseconds: 90_000_000, intensity: 0.90, sharpness: 0.75, includeUIKitOverlay: false),
+            // Strong: triple-tap
+            CuePulse(delayNanoseconds: 500_000_000, intensity: 1.0, sharpness: 1.0, includeUIKitOverlay: true),
+            CuePulse(delayNanoseconds: 80_000_000, intensity: 1.0, sharpness: 1.0, includeUIKitOverlay: false),
+            CuePulse(delayNanoseconds: 80_000_000, intensity: 1.0, sharpness: 1.0, includeUIKitOverlay: false)
+        ])
     }
 
     func playCalibrationStartCue() {
         startEngineIfNeeded()
+        // Single firm tap — capture has begun
         playCueSequence([
-            CuePulse(delayNanoseconds: 0, intensity: 0.90, sharpness: 0.55, includeUIKitOverlay: true)
+            CuePulse(delayNanoseconds: 0, intensity: 0.95, sharpness: 0.60, includeUIKitOverlay: true)
         ])
     }
 
     func playCalibrationSuccessCue() {
         startEngineIfNeeded()
+        // Rising two-tap — feels like arrival
         playCueSequence([
             CuePulse(delayNanoseconds: 0, intensity: 0.80, sharpness: 0.45, includeUIKitOverlay: true),
-            CuePulse(delayNanoseconds: 220_000_000, intensity: 0.95, sharpness: 0.60, includeUIKitOverlay: true)
+            CuePulse(delayNanoseconds: 200_000_000, intensity: 1.0, sharpness: 0.70, includeUIKitOverlay: true)
         ])
     }
 
     func playCalibrationFailureCue() {
         startEngineIfNeeded()
+        // Descending two-tap — gentle "not yet"
         playCueSequence([
-            CuePulse(delayNanoseconds: 0, intensity: 0.65, sharpness: 0.35, includeUIKitOverlay: true),
-            CuePulse(delayNanoseconds: 180_000_000, intensity: 0.75, sharpness: 0.45, includeUIKitOverlay: true),
-            CuePulse(delayNanoseconds: 180_000_000, intensity: 0.90, sharpness: 0.55, includeUIKitOverlay: true)
+            CuePulse(delayNanoseconds: 0, intensity: 0.85, sharpness: 0.55, includeUIKitOverlay: true),
+            CuePulse(delayNanoseconds: 180_000_000, intensity: 0.50, sharpness: 0.30, includeUIKitOverlay: true)
         ])
     }
 
@@ -77,6 +92,20 @@ final class HapticsService: HapticsControlling {
             generator.prepare()
             generator.selectionChanged()
         }
+    }
+
+    func pause() {
+        pulseTimer?.invalidate()
+        pulseTimer = nil
+        cueTask?.cancel()
+        cueTask = nil
+        engine?.stop(completionHandler: { _ in })
+        engineRunning = false
+    }
+
+    func resume(deficit: Double) {
+        currentZone = .none
+        update(deficit: deficit)
     }
 
     func stopAll() {
@@ -90,10 +119,64 @@ final class HapticsService: HapticsControlling {
     }
 
     private func playPulse(for zone: HapticZone) {
-        playPulse(intensity: zone.intensity, sharpness: zone.sharpness, includeUIKitOverlay: true)
+        playRhythmicPattern(for: zone)
     }
 
-    private func playPulse(intensity: Float, sharpness: Float, includeUIKitOverlay: Bool) {
+    /// Plays a rhythmic haptic pattern:
+    /// - Gentle: single tap
+    /// - Medium: double-tap (90ms apart)
+    /// - Strong: triple rapid pulse (80ms apart)
+    private func playRhythmicPattern(for zone: HapticZone) {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
+            playUIKitFallback(intensity: zone.intensity)
+            return
+        }
+        guard startEngineIfNeeded() else {
+            playUIKitFallback(intensity: zone.intensity)
+            return
+        }
+
+        let tapCount: Int
+        let gapSeconds: Double
+        switch zone {
+        case .none:
+            return
+        case .gentle:
+            tapCount = 1
+            gapSeconds = 0
+        case .medium:
+            tapCount = 2
+            gapSeconds = 0.09
+        case .strong:
+            tapCount = 3
+            gapSeconds = 0.08
+        }
+
+        var events: [CHHapticEvent] = []
+        for i in 0..<tapCount {
+            let time = Double(i) * gapSeconds
+            let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: zone.intensity)
+            let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: zone.sharpness)
+            events.append(CHHapticEvent(
+                eventType: .hapticTransient,
+                parameters: [intensityParam, sharpnessParam],
+                relativeTime: time
+            ))
+        }
+
+        guard
+            let pattern = try? CHHapticPattern(events: events, parameters: []),
+            let player = try? engine?.makePlayer(with: pattern)
+        else {
+            playUIKitFallback(intensity: zone.intensity)
+            return
+        }
+
+        try? player.start(atTime: 0)
+        playUIKitFallback(intensity: zone.intensity)
+    }
+
+    private func playSinglePulse(intensity: Float, sharpness: Float) {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
             playUIKitFallback(intensity: intensity)
             return
@@ -103,11 +186,12 @@ final class HapticsService: HapticsControlling {
             return
         }
 
-        let intensityParameter = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
-        let sharpnessParameter = CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
         let event = CHHapticEvent(
             eventType: .hapticTransient,
-            parameters: [intensityParameter, sharpnessParameter],
+            parameters: [
+                CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
+            ],
             relativeTime: 0
         )
 
@@ -120,9 +204,7 @@ final class HapticsService: HapticsControlling {
         }
 
         try? player.start(atTime: 0)
-        if includeUIKitOverlay {
-            playUIKitFallback(intensity: intensity)
-        }
+        playUIKitFallback(intensity: intensity)
     }
 
     private func playCueSequence(_ pulses: [CuePulse]) {
@@ -134,11 +216,10 @@ final class HapticsService: HapticsControlling {
                     try? await Task.sleep(nanoseconds: pulse.delayNanoseconds)
                 }
                 guard !Task.isCancelled else { return }
-                self.playPulse(
-                    intensity: pulse.intensity,
-                    sharpness: pulse.sharpness,
-                    includeUIKitOverlay: pulse.includeUIKitOverlay
-                )
+                self.playSinglePulse(intensity: pulse.intensity, sharpness: pulse.sharpness)
+                if pulse.includeUIKitOverlay {
+                    self.playUIKitFallback(intensity: pulse.intensity)
+                }
             }
         }
     }
@@ -203,5 +284,7 @@ final class NoOpHapticsService: HapticsControlling {
     func playCalibrationSuccessCue() {}
     func playCalibrationFailureCue() {}
     func playSliderTick() {}
+    func pause() {}
+    func resume(deficit: Double) {}
     func stopAll() {}
 }

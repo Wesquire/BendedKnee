@@ -25,7 +25,7 @@ struct BendAngleEstimator {
         CMAcceleration(
             x: gravity.x * pocketSide.lateralSign,
             y: gravity.y,
-            z: gravity.z
+            z: gravity.z * pocketSide.depthSign
         )
     }
 }
